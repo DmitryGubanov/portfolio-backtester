@@ -13,6 +13,8 @@ Main features:
 
 # Current work in progress
 
+Short-term:
+
 o separate into different files
 o create Trader class to handle trading logic (placing orders, commissions, etc.)
 o compare information against known/real data to verify accuracy
@@ -20,6 +22,13 @@ o weird behaviour: withdrawals can lead to negative cash values
 o bug: withdrawals can lead to negative portfolio values
 o bug: occasionally generating data leads to divide by 0
 o bug: occasionally generating data leads to infinite recursion
+
+
+Long-term:
+
+o interface (e.g. web)
+o trades based on indicators
+o dynamic portfolio ratios depending
 
 # Version features/change
 
