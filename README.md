@@ -15,7 +15,7 @@ Main features:
 
 Short-term:
 
-o separate into different files
+o separate into different files  
 o create Trader class to handle trading logic (placing orders, commissions, etc.)
 o compare information against known/real data to verify accuracy
 o weird behaviour: withdrawals can lead to negative cash values
