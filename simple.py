@@ -78,7 +78,7 @@ class Market:
     try:
       return float(self.stocks[ticker][self.dates[date_idx]])
     except KeyError:
-      return self.__recursive_query_stock(ticker, date_idx - 1)      
+      return self.__recursive_query_stock(ticker, date_idx - 1)
 
   def set_date(self, date):
     if date < self.dates[0]:
@@ -98,7 +98,7 @@ class Market:
       date_idxs  = (dates.index(date_range[0]), dates.index(date_range[1]))
       self.dates = dates[date_idxs[0]:date_idxs[1] + 1]
     self.date = (0, self.dates[0])
-      
+
   def advance_day(self):
     self.date = (self.date[0] + 1, self.dates[self.date[0] + 1])
     self.__raise_period_flags()
@@ -170,7 +170,7 @@ class Simulator:
     err += self.__init_portfolio()
     if err:
       return -1
-    
+
     while self.market.current_date() < self.dates_testing[1]:
       self.market.advance_day()
       holdings = list(self.portfolio.holdings.keys())
@@ -178,7 +178,7 @@ class Simulator:
       self.__adjust_portfolio()
       self.__record_stats()
     return 0
-    
+
   def __init_market(self):
     if self.market == None:
       return -1
@@ -195,7 +195,7 @@ class Simulator:
     for (ticker,portion) in self.portfolio.assets.items():
       self.__enter_position(ticker, (self.initial_cash * portion) // self.market.query_stock(ticker))
     return 0
-  
+
   def __init_simulation_dates(self):
     if not self.dates_set[0] or self.dates_testing[0] < self.market.dates[0]:
       self.dates_testing = (self.market.dates[0], self.dates_testing[1])
@@ -203,7 +203,7 @@ class Simulator:
       self.market.set_date(self.dates_testing[0])
     if not self.dates_set[1] or self.dates_testing[1] > self.market.dates[-1]:
       self.dates_testing = (self.dates_testing[0], self.market.dates[-1])
-      
+
     self.dates_set = (True, True)
     return 0
 
@@ -228,7 +228,7 @@ class Simulator:
       for (asset, change) in sorted(share_changes.items(), key=lambda x: share_changes[x[0]]):
         if change < 0:
           self.__exit_position(asset, abs(change))
-        else: 
+        else:
           self.__enter_position(asset, abs(change))
 
   def __enter_position(self, ticker, shares):
@@ -262,7 +262,7 @@ class Simulator:
     self.stats[self.stat_keys[1]][0].append(self.market.current_date())
     alloc = [abs(self.portfolio.holdings_values[assets[i]] / self.portfolio.value()) for i in range(0, len(assets))]
     self.stats[self.stat_keys[1]][1].append(alloc)
-      
+
     # annual returns
     if self.market.new_period['y'] or len(self.stats[self.stat_keys[2]][2]) == 0:
       self.stats[self.stat_keys[2]][0].append(str(date_obj(self.market.current_date()).year - 1))
@@ -287,6 +287,7 @@ class Portfolio:
     self.assets = {}
     self.assets_types = {}
 
+  # asset types: 'long' & 'short'
   def add_asset(self, ticker, portion, asset_type):
     self.assets[ticker.upper()] = float(portion)
     self.assets_types[ticker.upper()] = asset_type
@@ -369,7 +370,7 @@ def readlines(filename):
   with open(filename, 'r') as file:
     lines = [line.strip() for line in file]
   return lines
-    
+
 def currency(number):
   return "{0:.2f}".format(float(number))
 
@@ -409,7 +410,7 @@ def get_sma(values, period):
     sma.append(sum/(i + 1))
   for i in range(period - 1, len(values)):
     sum = 0
-    for j in range(i, i - period, -1): 
+    for j in range(i, i - period, -1):
       sum += float(values[j])
     sma.append(sum/period)
   return sma
@@ -670,7 +671,7 @@ def main():
     if len(failed) > 0:
       failed_stocks = ', '.join(failed)
       print("failed to download:\n" + failed_stocks)
-      
+
   if args.download_using != None:
     failed = download_stocks_data([line.strip() for line in readlines(args.download_using[0])], False)
     if len(failed) == len(args.download):
@@ -758,7 +759,7 @@ def main():
       for i in range(0, len(args.use_generated) // 2):
         data = generate_theoretical_data(args.use_generated[i*2], args.use_generated[i*2+1], 0.00009, 0.19, 0.2)
         my_market.inject_stock_data(args.use_generated[i*2], data[3][0], data[0])
-    
+
     my_portfolio = Portfolio(float(args.portfolio[0]))
     for i in range(0, len(args.portfolio[6:]) // 3):
       my_portfolio.add_asset(args.portfolio[i*3+6], float(args.portfolio[i*3+7]), args.portfolio[i*3+8])
@@ -780,7 +781,7 @@ def main():
 
     print('initial -> $' + currency(port_vals[0]))
     print('final ---> $' + currency(port_vals[1]))
-    
+
 #    for i in range(0, len(my_sim.trade_history[0])):
 #      print(my_sim.trade_history[0][i] + ' : ' + my_sim.trade_history[1][i])
 
@@ -798,7 +799,7 @@ def main():
     x = [dt.strptime(d, "%Y-%m-%d").date() for d in dates]
     y = [[ratio[i] for ratio in ratios] for i in range(0, len(ratios[0]))]
     legend = sorted(my_portfolio.assets.keys())
-    
+
 
     pyplot.subplot(412)
     pyplot.stackplot(x, y, alpha=0.5)
@@ -837,7 +838,7 @@ def main():
         if values[i] < lowest_since:
           lowest_since = values[i]
           potential_end = dates[i]
-          
+
     print('max drawdown -> ' + percent(drawdown) + '%')
     print(' from ' + drawdown_start  + ' to ' + drawdown_end + ' recovered by ' + drawdown_recover)
 
@@ -859,7 +860,7 @@ def main():
     print('adjusted CAGR: ' + percent(((my_portfolio.value() - my_sim.contribution[2]) / port_vals[0]) ** (1/years) - 1) + '%')
 
     pyplot.show()
-    
+
   exit()
 
 if __name__ == "__main__":
