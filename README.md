@@ -16,8 +16,8 @@ Main features:
 Short-term:
 
 o separate into different files  
-o create Downloader class to handle downloading data and putting it into consistent format  
-o implement new way to get data (typical yahoo way wash shut down)  
+x create Downloader class to handle downloading data and putting it into consistent format  
+x implement new way to get data (typical yahoo way was shut down) (chose to use google)
 o create Trader class to handle trading logic (placing orders, commissions, etc.)  
 o compare information against known/real data to verify accuracy  
 o weird behaviour: withdrawals can lead to negative cash values  
@@ -30,7 +30,7 @@ Long-term:
 
 o interface (e.g. web)  
 o trades based on indicators  
-o dynamic portfolio ratios depending on conditions 
+o dynamic portfolio ratios depending on conditions
 
 # Version features/change
 
@@ -83,4 +83,6 @@ v2.3, simulation features
 - add optional commission costs
 - add portfolio statistics for graphing purposes (portfolio value, asset allocation, annual return, contribution vs growth)
 
-v2.4, validation and cleanup
+v2.4, validation, cleanup, and fixes
+- separate download logic into own Downloader class
+- implement downloading from google, since yahoo stopped their free/easy to use service

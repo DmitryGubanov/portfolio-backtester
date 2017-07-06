@@ -2,7 +2,22 @@ import urllib.request
 import os
 import os.path
 import datetime
+import argparse
 
+###
+# Argument definitions for the usage of the Downloader class directly from the command line
+##
+parser = argparse.ArgumentParser(description="Downloader for historical stock data.")
+download_group = parser.add_mutually_exclusive_group(required=True)
+download_group.add_argument('--download', nargs='+', help='the stock ticker(s) to download')
+download_group.add_argument('--download-from', nargs='+', help='file(s) containing the stock tickers to download')
+parser.add_argument('--using', default='google', nargs=1, help='a source/API from which to get the data, default: google')
+
+
+###
+# A class that handles downloading and coverting stock data into a format usable by the
+# rest of the program
+##
 class Downloader:
 
     def __init__(self):
@@ -21,6 +36,21 @@ class Downloader:
             if not err:
                 return 0
         print('error: could not download from any sources')
+
+    ##
+    # given a file and preferred source, downloads all the ticker(s) data from source to disk
+    def download_from_files(self, ticker_files, preferred_source):
+        for ticker_file in ticker_files:
+            with open(ticker_file, 'r') as file:
+                ticker_lines = file.readlines()
+            for line in ticker_lines:
+                self.download(line.strip(), preferred_source)
+
+    ##
+    # given a list and preferred source, downloads all ticker(s) data in list from source to disk
+    def download_from_list(self, ticker_list, preferred_source):
+        for ticker in ticker_list:
+            self.download(ticker, preferred_source)
 
     ##
     # routes to the correct source and handles errors
@@ -98,7 +128,17 @@ class Downloader:
             for line in data:
                 file.write(','.join(line) + '\n')
 
+
+###
+# MAIN
+##
 if __name__ == "__main__":
     downloader = Downloader()
-    downloader.download('UPRO', 'google')
-    exit
+    args = parser.parse_args()
+    if args.download_from:
+        downloader.download_from_files(args.download_from, args.using)
+        exit()
+    if args.download:
+        downloader.download_from_list(args.download, args.using)
+        exit()
+    exit()
