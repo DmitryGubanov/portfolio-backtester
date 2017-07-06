@@ -69,7 +69,6 @@ class Downloader:
     # this will download and convert one year at a time going backwards until it
     # reaches the end
     def __download_using_google(self, ticker):
-        curr_date = "0000-00-00"
         last_date = datetime.date.today().strftime("%Y-%m-%d")
         data = []
         while True:
