@@ -16,6 +16,8 @@ Main features:
 Short-term:
 
 o separate into different files  
+o create Downloader class to handle downloading data and putting it into consistent format  
+o implement new way to get data (typical yahoo way wash shut down)  
 o create Trader class to handle trading logic (placing orders, commissions, etc.)  
 o compare information against known/real data to verify accuracy  
 o weird behaviour: withdrawals can lead to negative cash values  
@@ -28,7 +30,7 @@ Long-term:
 
 o interface (e.g. web)  
 o trades based on indicators  
-o dynamic portfolio ratios depending  
+o dynamic portfolio ratios depending on conditions 
 
 # Version features/change
 
