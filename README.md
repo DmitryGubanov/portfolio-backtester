@@ -23,7 +23,8 @@ o compare information against known/real data to verify accuracy
 o weird behaviour: withdrawals can lead to negative cash values  
 o bug: withdrawals can lead to negative portfolio values  
 o bug: occasionally generating data leads to divide by 0  
-o bug: occasionally generating data leads to infinite recursion  
+o bug: occasionally generating data leads to infinite recursion
+o ??? separate Downloader into Downloader and DataStorage classes ???
 
 
 Long-term:
