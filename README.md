@@ -15,7 +15,7 @@ Main features:
 
 Short-term:
 
-o separate into different files  
+x separate into different files  
 x create Downloader class to handle downloading data and putting it into consistent format  
 x implement new way to get data (typical yahoo way was shut down) (chose to use google)
 o create Trader class to handle trading logic (placing orders, commissions, etc.)  
@@ -29,7 +29,7 @@ o ??? separate Downloader into Downloader and DataStorage classes ???
 
 Long-term:
 
-o interface (e.g. web)  
+o (v3) interface (e.g. web)  
 o trades based on indicators  
 o dynamic portfolio ratios depending on conditions
 
@@ -87,3 +87,4 @@ v2.3, simulation features
 v2.4, validation, cleanup, and fixes
 - separate download logic into own Downloader class
 - implement downloading from google, since yahoo stopped their free/easy to use service
+- separated all classes into own files and put all util classes/functions into own file

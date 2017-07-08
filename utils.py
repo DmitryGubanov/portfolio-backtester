@@ -3,6 +3,7 @@
 # files and classes in this project
 ###########
 
+import datetime
 from datetime import datetime as dt
 import os
 import os.path
@@ -268,7 +269,7 @@ def nearest_date_index(date, dates, direction):
 def build_price_lut(ticker):
     price_lookup = {}
     file_content = readlines(filename(ticker))
-    for i in range(1, len(file_content)):
+    for i in range(0, len(file_content)):
         price_lookup[file_content[i].split(',')[0]] = float(
-            file_content[i].split(',')[6])
+            file_content[i].split(',')[4])
     return price_lookup
