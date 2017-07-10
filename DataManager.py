@@ -126,7 +126,7 @@ class DataManger(object):
         eof = len(file_content) - 1
         for i in range(eof, 0, -1):
             data.append([])
-            data[eof - i].append(value.strip()) for value in file_content[i].split(',')
+            data[eof - i].append([value.strip() for value in file_content[i].split(',')])
         return data
 
     def _read_csv_file_columns_for(ticker):
@@ -147,5 +147,6 @@ class DataManger(object):
         eof = len(file_content) - 1
         for i in range(eof, 0, -1):
             values = file_content[i].split(',')
-            data[j].append(values[j].strip()) for j in range(0, len(values))
+            for j in range(0, len(values)):
+                data[j].append(values[j].strip())
         return data
