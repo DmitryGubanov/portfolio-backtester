@@ -54,7 +54,7 @@ class Downloader:
 
     ##
     # routes to the correct source and handles errors
-    # NOTE: currently sort of useless
+    # TODO: currently sort of useless
     def __download_from_source(self, source, ticker):
         err = self.sources[source](ticker)
         if err:
@@ -93,6 +93,7 @@ class Downloader:
 
     ##
     # simple URL generating function for the google finance API
+    # TODO: adhere to string formatting guidelines
     def __google_url(self, ticker, date):
         url = "http://www.google.com/finance/historical"
         url += "?q=" + ticker
@@ -115,11 +116,13 @@ class Downloader:
 
     ##
     # simple filename generating function for a ticker
+    # TODO: moved to DataManager
     def __filename(self, ticker):
         return "data/" + ticker.upper() + ".csv"
 
     ##
     # writes an array in [[date, open, high, low, close, volume], [...], ...] format to CSV style file
+    # TODO: moved to DataManager
     def __write_data_to_file(self, ticker, data):
         if os.path.isfile(self.__filename(ticker)):
             os.remove(self.__filename(ticker))

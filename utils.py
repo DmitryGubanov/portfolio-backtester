@@ -73,12 +73,14 @@ class SteppedAvgLookup:
 
 ##
 # the filename of the data for a given ticker
+# TODO: moved as private methord to DataManager, think of replacing all uses of this in main code
 def filename(ticker):
     return STOCK_DIR + ticker + ".csv"
 
 
 ##
 # like traditional readlines, just also does some boilerplate stuff
+# TODO: moved as private methord to DataManager, think of replacing all uses of this in main code
 def readlines(filename):
     with open(filename, 'r') as file:
         lines = [line.strip() for line in file]
@@ -106,6 +108,7 @@ def yahoo_url(ticker):
 
 ##
 # nicer looking wrapper for checking if a file exists
+# TODO: moved as private methord to DataManager, think of replacing all uses of this in main code
 def has_file(ticker):
     return os.path.isfile(filename(ticker))
 
@@ -130,6 +133,7 @@ def date_str(date):
 
 ##
 # returns the rows of a CSV file, where each row is an array
+# TODO: moved as private method to DataManager, think of replacing all uses of this in main code
 def read_csv_file_rows(filename):
     data = []
     file_content = readlines(filename)
@@ -145,6 +149,7 @@ def read_csv_file_rows(filename):
 
 ##
 # returns the columns of a CSV file, where each column is an array
+# TODO: moved as private method to DataManager, think of replacing all uses of this in main code
 def read_csv_file_columns(filename):
     try:
         file = open(filename)
@@ -167,6 +172,7 @@ def read_csv_file_columns(filename):
 
 ##
 # writes a list to a newline separated file
+# TODO: doesnt seem like a useful stock function, but something that is done once manually
 def write_list_to_file(list, filename, overwrite):
     if overwrite and os.path.isfile(filename):
         os.remove(filename)
@@ -266,6 +272,7 @@ def nearest_date_index(date, dates, direction):
 
 ##
 # Builds a dictionary from a file, dates as keys and prices as values
+# TODO: moved as public method to DataManager, think of replacing all uses of this in main code
 def build_price_lut(ticker):
     price_lookup = {}
     file_content = readlines(filename(ticker))

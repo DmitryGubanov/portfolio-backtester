@@ -24,7 +24,9 @@ o weird behaviour: withdrawals can lead to negative cash values
 o bug: withdrawals can lead to negative portfolio values  
 o bug: occasionally generating data leads to divide by 0  
 o bug: occasionally generating data leads to infinite recursion  
-o ??? separate Downloader into Downloader and DataStorage classes ???
+o separate Downloader into Downloader and DataManager classes  
+o Downloader feature: option to append to existing data instead of overwriting  
+o DataManager feature: fills in gaps (weekends/holidays) in data w/ previous last known value - makes code for querying simpler, especially between stocks in markets w/ diff. holidays
 
 
 Long-term:
