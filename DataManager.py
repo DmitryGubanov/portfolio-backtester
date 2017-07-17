@@ -1,32 +1,51 @@
 import os
 import os.path
+import datetime
 
 
-class DataManger(object):
+class DataManager(object):
+
+    DATE_FORMAT = '%Y-%m-%d'
+
     """A DataManager is responsible for managing (i.e. storing and retrieving) data on disk.
 
     In other words, this class provides an interface by which stock data can be queried from or stored onto disk.
-    Generally speaking, 'public' functions house high level logic for publicly used actions, while 'private' functions act as wrappers for low level or commonly used and simple, but ugly to write actions.
+    With regards to functions found in this class, 'public' functions house high level logic for publicly used actions, while 'private' functions act as wrappers for low level or commonly used and simple, but ugly to write actions.
 
     Attributes:
         data_location: A string indicating where the stock data is stored on disk
     """
 
+    # TODO: create reference dates? low priority, since doesnt affect trading that much
+
     def __init__(self, data_location='data/'):
-        """Inits DataManager with a data location."""
+        """Inits DataManager with a data location.
+
+        Args:
+            data_location: (optional) A string representing where the data dir will be on disk. Default location is ./data/
+        """
         self.data_location = data_location
 
-    def write_stock_data(self, ticker, data):
+    def write_stock_data(self, ticker, data, append):
         """Writes an array of data to a file on disk.
 
         Args:
             ticker: A string representing the ticker of a stock
             data: An array in [[date, open, high, low, close, volume], ...] format
+            append: A boolean representing whether or not to append to existing data
         """
-        self._remove_file_for(ticker)
-        self._write_data_to_csv_file(self._filename_for(ticker), data)
+        data_to_write = []
+        if append:
+            existing_data = self.read_stock_data(ticker, 'row')
+            if existing_data[0][0] < data[0][0] and existing_data[0][0] > data[-1][0]:
+                data_to_write = data[0:data.index(existing_data[0])] + existing_data
+        else:
+            data_to_write = data
+        if self._has_file_for(ticker):
+            self._remove_file_for(ticker)
+        self._write_data_to_csv_file(self._filename_for(ticker), data_to_write)
 
-    def read_stock_data(ticker, format):
+    def read_stock_data(self, ticker, format):
         """Retrieves stock data for a given ticker in a given format from disk.
 
         Args:
@@ -42,7 +61,7 @@ class DataManger(object):
             return self._read_csv_file_rows_for(ticker)
         return []
 
-    def build_price_lut(ticker):
+    def build_price_lut(self, ticker):
         """Builds a price look up table for a given ticker.
 
         Args:
@@ -53,12 +72,21 @@ class DataManger(object):
         """
         price_lookup = {}
         file_content = self._readlines_for(ticker)
-        for i in range(0, len(file_content)):
+        # handle corner case with single-line files
+        if len(file_content) == 1:
             line_data = file_content[i].split(',')
-            price_lookup[line_data[0]] = float(line_data[4])
+            return {line_data[0]: float(line_data[4])}
+        # handle multi-line files
+        curr_date = datetime.datetime.strptime(file_content[len(file_content) - 1].split(',')[0], DataManager.DATE_FORMAT)
+        for i in range(len(file_content) - 1, 0, -1):
+            line_data = file_content[i - 1].split(',')
+            next_date = datetime.datetime.strptime(line_data[0], DataManager.DATE_FORMAT)
+            while curr_date < next_date:
+                price_lookup[curr_date.strftime(DataManager.DATE_FORMAT)] = float(line_data[4])
+                curr_date = curr_date + datetime.timedelta(1)
         return price_lookup
 
-    def _write_data_to_csv_file(filename, data):
+    def _write_data_to_csv_file(self, filename, data):
         """Writes an array of data to disk in CSV format.
 
         Args:
@@ -69,7 +97,7 @@ class DataManger(object):
             for line in data:
                 file.write(','.join(line) + '\n')
 
-    def _filename_for(ticker):
+    def _filename_for(self, ticker):
         """Returns the file name for a ticker, including the path to said file.
 
         Args:
@@ -80,7 +108,7 @@ class DataManger(object):
         """
         return self.data_location + ticker.upper() + ".csv"
 
-    def _readlines_for(ticker):
+    def _readlines_for(self, ticker):
         """Returns the lines of the file for a given ticker.
 
         Args:
@@ -89,11 +117,11 @@ class DataManger(object):
         Returns:
             An array with each element containing a line of the file for the given ticker
         """
-        with open(self._filename(ticker), 'r') as file:
+        with open(self._filename_for(ticker), 'r') as file:
             lines = [line.strip() for line in file]
         return lines
 
-    def _has_file_for(ticker):
+    def _has_file_for(self, ticker):
         """Returns whether a file for a given ticker exists.
 
         Args:
@@ -102,17 +130,17 @@ class DataManger(object):
         Returns:
             A boolean value representing whether or not a file exists for a given ticker
         """
-        return os.path.isfile(self._filename(ticker))
+        return os.path.isfile(self._filename_for(ticker))
 
-    def _remove_file_for(ticker):
+    def _remove_file_for(self, ticker):
         """Removes the file for the given ticker.
 
         Args:
             ticker: A string representing the ticker of a stock
         """
-        os.remove(self._filename(ticker))
+        os.remove(self._filename_for(ticker))
 
-    def _read_csv_file_rows_for(ticker):
+    def _read_csv_file_rows_for(self, ticker):
         """Reads and returns the data in a CSV file for a given ticker in row-by-row format.
 
         Args:
@@ -121,15 +149,16 @@ class DataManger(object):
         Returns:
             An array, where each element is an array containing data for a row in a CSV file
         """
+        # TODO: instead of using ranges, use a mapping from date key to row
         data = []
-        file_content = readlines(filename)
+        file_content = self._readlines_for(ticker)
         eof = len(file_content) - 1
         for i in range(eof, 0, -1):
             data.append([])
             data[eof - i].append([value.strip() for value in file_content[i].split(',')])
         return data
 
-    def _read_csv_file_columns_for(ticker):
+    def _read_csv_file_columns_for(self, ticker):
         """Reads and returns the data in a CSV file for a given ticker in column-by-column format.
 
         Args:
@@ -138,15 +167,16 @@ class DataManger(object):
         Returns:
             An array, where each element is an array containing data for a column in a CSV file
         """
+        # TODO: instead of using fixed ranges, use a mapping from column name key to column
         data = []
-        file_content = readlines(filename)
+        file_content = self._readlines_for(ticker)
         # create arrays for each column
-        for i in range(0, len(file_content[0].split(','))):
+        for i in range(0, 6):
             data.append([])
         # iterate through file
         eof = len(file_content) - 1
         for i in range(eof, 0, -1):
             values = file_content[i].split(',')
-            for j in range(0, len(values)):
+            for j in range(0, 6):
                 data[j].append(values[j].strip())
         return data

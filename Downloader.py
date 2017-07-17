@@ -3,6 +3,7 @@ import os
 import os.path
 import datetime
 import argparse
+from DataManager import DataManager
 
 ###
 # Argument definitions for the usage of the Downloader class directly from the command line
@@ -91,16 +92,28 @@ class Downloader:
     def __download_using_yahoo(self, ticker):
         return 1
 
-    ##
-    # simple URL generating function for the google finance API
-    # TODO: adhere to string formatting guidelines
     def __google_url(self, ticker, date):
+        """Simple URL generating function for the Google finance API.
+
+        Args:
+            ticker: A string representing the ticker to download
+            date: A string in 'YYYY-MM-DD' format representing the end date for the data
+        """
+        # TODO: adhere to string formatting guidelines
+        # TODO: currently implementing a hackish way to generate the URL
+        special_cases = {
+            'TLT': 'NASDAQ'
+        }
+        quote_ticker = ticker
+        if ticker.upper() in special_cases.keys():
+            quote_ticker = special_cases[ticker.upper()] + '%3A' + ticker
         url = "http://www.google.com/finance/historical"
-        url += "?q=" + ticker
+        url += "?q=" + quote_ticker
         url += "&enddate=" + datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%b") + "%20"
         url += datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%d") + ",%20"
         url += datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%Y")
         url += "&output=csv"
+        print(url)
         return url
 
     ##
@@ -122,13 +135,10 @@ class Downloader:
 
     ##
     # writes an array in [[date, open, high, low, close, volume], [...], ...] format to CSV style file
-    # TODO: moved to DataManager
+    # TODO: moved to DataManager, should now move this out of the downloader class altogerher
     def __write_data_to_file(self, ticker, data):
-        if os.path.isfile(self.__filename(ticker)):
-            os.remove(self.__filename(ticker))
-        with open(self.__filename(ticker), 'w') as file:
-            for line in data:
-                file.write(','.join(line) + '\n')
+        db = DataManager()
+        db.write_stock_data(ticker, data)
 
 
 ###

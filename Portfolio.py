@@ -7,12 +7,22 @@ class Portfolio:
 
     ##
     # initializes an empty portfolio
-    def __init__(self, cash):
+    def __init__(self, cash=0):
         self.cash = float(cash)
+        self.total_contributions = 0
         self.holdings = {}
         self.holdings_values = {}
         self.assets = {}
         self.assets_types = {}
+
+    def add_cash(self, amount):
+        """Adds a certain amount of cash to the portfolio.
+
+        Args:
+            amount: A value representing the amount of cash to add
+        """
+        self.cash += float(amount)
+        self.total_contributions += float(amount)
 
     ##
     # adds an asset to the portfolio which is a desired holding under certain conditions
@@ -20,16 +30,30 @@ class Portfolio:
     def add_asset(self, ticker, portion, asset_type):
         self.assets[ticker.upper()] = float(portion)
         self.assets_types[ticker.upper()] = asset_type
+        self.holdings[ticker.upper()] = 0
+        self.holdings_values[ticker.upper()] = float(0)
+
+    # TODO: market as singleton eventually, so change to query market here for commission and price
 
     ##
     # adds a holding to the portfolio in the form of a buy
     def buy(self, ticker, amount, price, commission):
+        """Adds a holding to the portfolio in the form of a buy.
+
+        Args:
+            ticker: A string for the ticker of the holding to add
+            amount: A value corresponding to the number of shares to buy
+            price: A value corresponding to the price of each share
+            commission: A value corresponding to the cost of the trade
+        """
+        if float(amount) * float(price) > self.cash:
+            print("NOT ENOUGH CASH TO BUY " + ticker)
+            return 1
         try:
             self.holdings[ticker.upper()] += int(amount)
         except KeyError:
             self.holdings[ticker.upper()] = int(amount)
-        self.holdings_values[ticker.upper(
-        )] = self.holdings[ticker.upper()] * float(price)
+        self.holdings_values[ticker.upper()] = self.holdings[ticker.upper()] * float(price)
         self.cash -= int(amount) * float(price) - float(commission)
         return 0
 
@@ -40,8 +64,7 @@ class Portfolio:
             self.holdings[ticker.upper()] -= int(amount)
         except KeyError:
             self.holdings[ticker.upper()] = -int(amount)
-        self.holdings_values[ticker.upper(
-        )] = self.holdings[ticker.upper()] * float(price)
+        self.holdings_values[ticker.upper()] = self.holdings[ticker.upper()] * float(price)
         self.cash += int(amount) * float(price) - float(commission)
         return 0
 
@@ -66,3 +89,11 @@ class Portfolio:
     # the total value of this portfolio (cash + assets)
     def value(self):
         return self.cash + sum(self.holdings_values.values())
+
+    def shares_of(self, ticker):
+        """Returns the number of shares this portfolio is holding of a given ticker."""
+        try:
+            shares = self.holdings[ticker.upper()]
+        except KeyError:
+            shares = 0
+        return shares

@@ -11,12 +11,12 @@ from datetime import datetime as dt
 import calendar
 
 from Downloader import Downloader
+from DataManager import DataManager
 from Market import Market
 from Portfolio import Portfolio
 from Simulator import Simulator
-from utils import SteppedAvgLookup
-
-from utils import filename, readlines, currency, percent, yahoo_url, has_file, date_obj, date_str, read_csv_file_rows, read_csv_file_columns, write_list_to_file, list_from_csv, subtract_date, nearest_index, build_price_lut
+from Trader import Trader
+from utils import *
 
 ##############################################################################
 # ARGUMENT DEFINITIONS
@@ -164,34 +164,30 @@ def compare_movement(data_a, data_b):
 # more data for the one with fewer data points to match the one with more. The generation is based on
 # averages in existing real data and assumes an existing correlation between two tickers (e.g. UPRO and SPY)
 def generate_theoretical_data(ticker_a, ticker_b, step, pos_adj, neg_adj):
-    data_a = read_csv_file_columns(filename(ticker_a))
-    data_b = read_csv_file_columns(filename(ticker_b))
+    data_a = db._read_csv_file_columns_for(ticker_a)
+    data_b = db._read_csv_file_columns_for(ticker_b)
     if len(data_a[0]) > len(data_b[0]):
         source_data = data_a
         target_data = data_b
     else:
         source_data = data_b
         target_data = data_a
-    changes = compare_movement(target_data[6], source_data[6])
+    changes = compare_movement(target_data[4], source_data[4])
     lut = SteppedAvgLookup(step, changes[1], changes[2])
-    generated_data = [float(target_data[6][0])]
+    generated_data = [float(target_data[4][0])]
     for i in range(source_data[0].index(target_data[0][0]), 0, -1):
-        change = float(source_data[6][i]) / float(source_data[6][i - 1]) - 1
+        change = float(source_data[4][i]) / float(source_data[4][i - 1]) - 1
         if change >= 0:
-            price = generated_data[0] / \
-                (change * (lut.get(change) + pos_adj) + 1)
+            price = generated_data[0] / (change * (lut.get(change) + pos_adj) + 1)
         else:
-            price = generated_data[0] / \
-                (change * (lut.get(change) + neg_adj) + 1)
+            price = generated_data[0] / (change * (lut.get(change) + neg_adj) + 1)
         generated_data.insert(0, price)
     for i in range(source_data[0].index(target_data[0][0]) + 1, len(source_data[0])):
-        change = float(source_data[6][i]) / float(source_data[6][i - 1]) - 1
+        change = float(source_data[4][i]) / float(source_data[4][i - 1]) - 1
         if change >= 0:
-            price = generated_data[-1] * \
-                (change * (lut.get(change) + pos_adj) + 1)
+            price = generated_data[-1] * (change * (lut.get(change) + pos_adj) + 1)
         else:
-            price = generated_data[-1] * \
-                (change * (lut.get(change) + neg_adj) + 1)
+            price = generated_data[-1] * (change * (lut.get(change) + neg_adj) + 1)
         generated_data.append(price)
     return [generated_data, source_data[0].index(target_data[0][0]), target_data, source_data, changes]
 
@@ -201,6 +197,7 @@ def generate_theoretical_data(ticker_a, ticker_b, step, pos_adj, neg_adj):
 ##############################################################################
 
 def main():
+    # TODO: HUGE: this whole main is sort of a disaster of hacked together statements that I wrote whenever I wanted to output something. Will replace this whole thing completely when I start v3, i.e. the interface part of this project
 
     args = parser.parse_args()
 
@@ -247,25 +244,27 @@ def main():
             print(tuple[0] + ":\t" + percent(tuple[1]) + '%')
 
     if args.generate != None:
-        adjustments = {'UPRO': (0.19, 0.2), 'TMF': (0.19, 0.2)}
+        adjustments = {'UPRO': (0.0, 0.00), 'TMF': (0.01, 0.05)}
         adjustment = (0, 0)
         if args.generate[0] in adjustments.keys():
             adjustment = adjustments[args.generate[0]]
         [gen_prices, idx, etf, src, changes] = generate_theoretical_data(
-            args.generate[0], args.generate[1], 0.00009, adjustment[0], adjustment[1])
+            args.generate[0], args.generate[1], 0.00005, adjustment[0], adjustment[1])
         dates = [[], []]
         dates[0] = [dt.strptime(d, "%Y-%m-%d").date() for d in etf[0]]
         dates[1] = [dt.strptime(d, "%Y-%m-%d").date() for d in src[0]]
-        pyplot.subplot(211)
-        pyplot.plot(dates[0], etf[6], label=args.generate[0])
-        pyplot.plot(dates[0], gen_prices[-len(etf[6]):],
+        pyplot.subplot(311)
+        pyplot.plot(dates[0], etf[4], label=args.generate[0])
+        pyplot.plot(dates[0], gen_prices[-len(etf[4]):],
                     label=args.generate[0] + '-generated')
         pyplot.legend(loc='upper left')
-        pyplot.subplot(212)
-        pyplot.plot(dates[1], src[6], label=args.generate[1])
+        pyplot.subplot(312)
+        pyplot.plot(dates[1], src[4], label=args.generate[1])
         pyplot.plot(dates[1], gen_prices,
                     label=args.generate[0] + '-generated')
         pyplot.legend(loc='upper left')
+        pyplot.subplot(313)
+        pyplot.plot(changes[0], changes[2], '.')
         pyplot.show()
 
     if args.draw_chart != None:
@@ -300,23 +299,35 @@ def main():
         pyplot.show()
 
     if args.portfolio != None:
+        my_trader = Trader()
         my_market = Market(None, None)
+        my_trader.market = my_market
         if args.use_generated != None:
+            adjustments = {'UPRO': (0.0, 0.00), 'TMF': (0.01, 0.05)}
+            adjustment = (0, 0)
             for i in range(0, len(args.use_generated) // 2):
+                adjustment = adjustments[args.use_generated[i * 2]]
                 data = generate_theoretical_data(
-                    args.use_generated[i * 2], args.use_generated[i * 2 + 1], 0.00009, 0.19, 0.2)
+                    args.use_generated[i * 2], args.use_generated[i * 2 + 1], 0.00005, adjustment[0], adjustment[1])
                 my_market.inject_stock_data(
                     args.use_generated[i * 2], data[3][0], data[0])
 
-        my_portfolio = Portfolio(float(args.portfolio[0]))
+        my_portfolio = Portfolio()
         for i in range(0, len(args.portfolio[6:]) // 3):
-            my_portfolio.add_asset(
-                args.portfolio[i * 3 + 6], float(args.portfolio[i * 3 + 7]), args.portfolio[i * 3 + 8])
+            my_trader.add_asset_of_interest(args.portfolio[i * 3 + 6])
+            my_trader.set_desired_asset_ratio(args.portfolio[i * 3 + 6], float(args.portfolio[i * 3 + 7]))
+            #my_portfolio.add_asset(args.portfolio[i * 3 + 6], float(args.portfolio[i * 3 + 7]), args.portfolio[i * 3 + 8])
 
+        my_trader.portfolio = my_portfolio
+        my_trader.set_starting_cash(args.portfolio[0])
+        if args.portfolio[2] != "None" and args.portfolio[1] != "None":
+            my_trader.set_strategy('contributions', [args.portfolio[2], args.portfolio[1]])
+        if args.portfolio[3] != "None":
+            my_trader.set_strategy('rebalancing', [args.portfolio[3]])
         my_sim = Simulator()
-        my_sim.add_portfolio(my_portfolio)
+        my_sim.add_trader(my_trader)
+        #my_sim.add_portfolio(my_portfolio)
         my_sim.set_market(my_market)
-        my_sim.define_contributions(args.portfolio[1], args.portfolio[2])
         my_sim.define_rebalancing(args.portfolio[3])
         if args.portfolio[4]:
             my_sim.set_start_date(args.portfolio[4])
@@ -324,7 +335,7 @@ def main():
             my_sim.set_end_date(args.portfolio[5])
 
         port_vals = []
-        port_vals.append(my_portfolio.value())
+        port_vals.append(my_trader.starting_cash)
         my_sim.simulate()
         port_vals.append(my_portfolio.value())
 
@@ -348,8 +359,10 @@ def main():
         (dates, ratios) = my_sim.stats[Simulator.stat_keys[1]]
         x = [dt.strptime(d, "%Y-%m-%d").date() for d in dates]
         y = [[ratio[i] for ratio in ratios] for i in range(0, len(ratios[0]))]
-        legend = sorted(my_portfolio.assets.keys())
+        legend = sorted(my_trader.assets_of_interest)
 
+        #print(len(x))
+        #print(len(y))
         pyplot.subplot(412)
         pyplot.stackplot(x, y, alpha=0.5)
         pyplot.grid(b=True, which='major', color='grey', linestyle='-')
@@ -405,11 +418,11 @@ def main():
 
         # figure out total contributions, ratio of contributions:value, CAGR ignoring contributions
         print('---')
-        print('total contributions: $' + currency(my_sim.contribution[2]))
+        print('total contributions: $' + currency(my_portfolio.total_contributions))
         print('total growth: $' + currency(my_portfolio.value() -
-                                           my_sim.contribution[2] - port_vals[0]))
+                                           my_portfolio.total_contributions - port_vals[0]))
         print('adjusted CAGR: ' + percent(((my_portfolio.value() -
-                                            my_sim.contribution[2]) / port_vals[0]) ** (1 / years) - 1) + '%')
+                                            my_portfolio.total_contributions) / port_vals[0]) ** (1 / years) - 1) + '%')
 
         pyplot.show()
 
@@ -417,4 +430,5 @@ def main():
 
 
 if __name__ == "__main__":
+    db = DataManager()
     main()

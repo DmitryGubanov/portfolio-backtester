@@ -2,6 +2,8 @@ from datetime import datetime as dt
 
 from utils import date_str, date_obj, build_price_lut
 
+from DataManager import DataManager
+
 ###
 # A Market containing stocks and a date. The Market can be queried for stock prices at
 # the current date of the market
@@ -11,6 +13,7 @@ class Market:
     ##
     # initialize Market with a set of dates and stocks w/ price LUTs
     def __init__(self, tickers, dates):
+        self._db = DataManager()
         self.new_period = {'m': False, 'q': False, 'y': False}
         self.stocks = {}
         if tickers != None:
@@ -24,7 +27,8 @@ class Market:
     # creates LUTs for a given set of stocks
     def add_stocks(self, tickers):
         for ticker in tickers:
-            self.stocks[ticker.upper()] = build_price_lut(ticker.upper())
+            self.stocks[ticker.upper()] = self._db.build_price_lut(ticker.upper())
+            #self.stocks[ticker.upper()] = build_price_lut(ticker.upper())
 
     ##
     # injects provided stock data into this market - used for generated data

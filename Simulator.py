@@ -24,6 +24,7 @@ class Simulator:
     # initializes an empty simulator with values set to 0, False, or None
     def __init__(self):
         self.portfolio = None
+        self.trader = None
         self.contribution = (0, '', 0)
         self.rebalance_trigger = ''
         self.market = None
@@ -38,6 +39,10 @@ class Simulator:
     # TODO: make multiple portfolios
     def add_portfolio(self, portfolio):
         self.portfolio = portfolio
+
+    def add_trader(self, trader):
+        """"""
+        self.trader = trader
 
     ##
     # sets this simulator's market
@@ -83,17 +88,21 @@ class Simulator:
     def simulate(self):
         err = 0
         err += self.__init_market()
+        print(err)
         err += self.__init_simulation_dates()
-        err += self.__init_portfolio()
+        print(err)
+        err += self.trader.initialize_portfolio()
+        print(err)
         if err:
+
             return -1
 
         while self.market.current_date() < self.dates_testing[1]:
             self.market.advance_day()
-            holdings = list(self.portfolio.holdings.keys())
-            self.portfolio.update_holdings_values(
+            holdings = list(self.trader.portfolio.holdings.keys())
+            self.trader.portfolio.update_holdings_values(
                 holdings, [self.market.query_stock(x) for x in holdings])
-            self.__adjust_portfolio()
+            self.trader.adjust_portfolio()
             self.__record_stats()
         return 0
 
@@ -103,7 +112,7 @@ class Simulator:
         if self.market == None:
             return -1
         if len(self.market.stocks) == 0:
-            self.market.add_stocks(self.portfolio.assets.keys())
+            self.market.add_stocks(self.trader.assets_of_interest)
         if self.market.dates == None:
             self.market.set_default_dates()
         return 0
@@ -111,10 +120,10 @@ class Simulator:
     ##
     # initializes/resets the portfolio to work with the current simulation setup
     def __init_portfolio(self):
-        if self.portfolio == None:
+        if self.trader.portfolio == None:
             return -1
-        self.initial_cash = self.portfolio.cash
-        for (ticker, portion) in self.portfolio.assets.items():
+        self.initial_cash = self.trader.portfolio.cash
+        for (ticker, portion) in self.trader.portfolio.assets.items():
             self.__enter_position(
                 ticker, (self.initial_cash * portion) // self.market.query_stock(ticker))
         return 0
@@ -145,25 +154,25 @@ class Simulator:
     ##
     # looks at the portfolio and makes adjustments based on conditions set earlier
     # TODO: move into Trader class, probably?
-    def __adjust_portfolio(self):
-        # contributions
-        if self.contribution[1] and self.market.new_period[self.contribution[1]]:
-            self.portfolio.cash += self.contribution[0]
-            self.contribution = (
-                self.contribution[0], self.contribution[1], self.contribution[2] + self.contribution[0])
-        # rebalancing
-        if self.rebalance_trigger and self.market.new_period[self.rebalance_trigger]:
-            share_changes = {}
-            for (asset, portion) in self.portfolio.assets.items():
-                target = int(portion * self.portfolio.value() //
-                             self.market.query_stock(asset))
-                share_changes[asset] = target - \
-                    abs(self.portfolio.holdings[asset])
-            for (asset, change) in sorted(share_changes.items(), key=lambda x: share_changes[x[0]]):
-                if change < 0:
-                    self.__exit_position(asset, abs(change))
-                else:
-                    self.__enter_position(asset, abs(change))
+    # def __adjust_portfolio(self):
+    #     # contributions
+    #     if self.contribution[1] and self.market.new_period[self.contribution[1]]:
+    #         self.portfolio.cash += self.contribution[0]
+    #         self.contribution = (
+    #             self.contribution[0], self.contribution[1], self.contribution[2] + self.contribution[0])
+    #     # rebalancing
+    #     if self.rebalance_trigger and self.market.new_period[self.rebalance_trigger]:
+    #         share_changes = {}
+    #         for (asset, portion) in self.portfolio.assets.items():
+    #             target = int(portion * self.portfolio.value() //
+    #                          self.market.query_stock(asset))
+    #             share_changes[asset] = target - \
+    #                 abs(self.portfolio.holdings[asset])
+    #         for (asset, change) in sorted(share_changes.items(), key=lambda x: share_changes[x[0]]):
+    #             if change < 0:
+    #                 self.__exit_position(asset, abs(change))
+    #             else:
+    #                 self.__enter_position(asset, abs(change))
 
     ##
     # depending on the type of position, buys/shorts a position for a certain number of shares
@@ -201,28 +210,29 @@ class Simulator:
     def __record_stats(self):
         # portfolio value history
         self.stats[self.stat_keys[0]][0].append(self.market.current_date())
-        self.stats[self.stat_keys[0]][1].append(self.portfolio.value())
+        self.stats[self.stat_keys[0]][1].append(self.trader.portfolio.value())
 
         # asset allocation
-        assets = sorted(self.portfolio.assets.keys())
+        assets = sorted(self.trader.assets_of_interest)
         self.stats[self.stat_keys[1]][0].append(self.market.current_date())
-        alloc = [abs(self.portfolio.holdings_values[assets[i]] /
-                     self.portfolio.value()) for i in range(0, len(assets))]
+        alloc = [abs(self.trader.portfolio.holdings_values[assets[i]] /
+                     self.trader.portfolio.value()) for i in range(0, len(assets))]
         self.stats[self.stat_keys[1]][1].append(alloc)
 
         # annual returns
         if self.market.new_period['y'] or len(self.stats[self.stat_keys[2]][2]) == 0:
             self.stats[self.stat_keys[2]][0].append(
                 str(date_obj(self.market.current_date()).year - 1))
-            self.stats[self.stat_keys[2]][1].append(self.portfolio.value())
+            self.stats[self.stat_keys[2]][1].append(self.trader.portfolio.value())
             if len(self.stats[self.stat_keys[2]][2]) == 0:
                 self.stats[self.stat_keys[2]][2].append(0.0)
             else:
                 self.stats[self.stat_keys[2]][2].append(
-                    self.portfolio.value() / self.stats[self.stat_keys[2]][1][-2] - 1)
+                    self.trader.portfolio.value() / self.stats[self.stat_keys[2]][1][-2] - 1)
 
         # comtributions vs growth
         self.stats[self.stat_keys[3]][0].append(self.market.current_date())
-        contribution = max(0, self.contribution[2] + self.initial_cash)
-        growth = max(0, self.portfolio.value() - contribution)
+        contribution = max(0, self.trader.portfolio.total_contributions)
+        growth = max(0, self.trader.portfolio.value() - contribution)
+        #print("{}: {}".format(self.market.current_date(), contribution))
         self.stats[self.stat_keys[3]][1].append((contribution, growth))

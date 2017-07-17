@@ -18,22 +18,22 @@ Short-term:
 x separate into different files  
 x create Downloader class to handle downloading data and putting it into consistent format  
 x implement new way to get data (typical yahoo way was shut down) (chose to use google)
-o create Trader class to handle trading logic (placing orders, commissions, etc.)  
-o compare information against known/real data to verify accuracy  
-o weird behaviour: withdrawals can lead to negative cash values  
-o bug: withdrawals can lead to negative portfolio values  
-o bug: occasionally generating data leads to divide by 0  
-o bug: occasionally generating data leads to infinite recursion  
+x create Trader class to handle trading logic (placing orders, etc.)  
+x compare information against known/real data to verify accuracy  
+o weird behaviour: withdrawals can lead to negative cash values
 o separate Downloader into Downloader and DataManager classes  
 o Downloader feature: option to append to existing data instead of overwriting  
-o DataManager feature: fills in gaps (weekends/holidays) in data w/ previous last known value - makes code for querying simpler, especially between stocks in markets w/ diff. holidays
-
+o DataManager feature: fills in gaps (weekends/holidays) in data w/ previous last known value - makes code for querying simpler, especially between stocks in markets w/ diff. holidays  
+o rewrite Market as a singleton instead of an instantiated class  
+o rewrite some methods in Simulator to fit Market and Trader better  
+o Stats needs to be reworked completely
 
 Long-term:
 
 o (v3) interface (e.g. web)  
 o trades based on indicators  
 o dynamic portfolio ratios depending on conditions
+o benchmarks
 
 # Version features/change
 
