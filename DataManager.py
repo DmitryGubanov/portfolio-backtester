@@ -36,21 +36,26 @@ class DataManager(object):
         """
         data_to_write = []
         if append:
+            mode = 'a'
             existing_data = self.read_stock_data(ticker, 'row')
-            if existing_data[0][0] < data[0][0] and existing_data[0][0] > data[-1][0]:
-                data_to_write = data[0:data.index(existing_data[0])] + existing_data
+            if len(existing_data) == 0:
+                data_to_write = data
+            elif existing_data[-1][0] < data[-1][0] and existing_data[-1][0] > data[0][0]:
+                index_of_last = next(i for i, _ in enumerate(data) if _[0] == existing_data[-1][0])
+                data_to_write = data[index_of_last + 1:]
         else:
+            mode = 'w'
             data_to_write = data
-        if self._has_file_for(ticker):
-            self._remove_file_for(ticker)
-        self._write_data_to_csv_file(self._filename_for(ticker), data_to_write)
+            if self._has_file_for(ticker):
+                self._remove_file_for(ticker)
+        self._write_data_to_csv_file(self._filename_for(ticker), data_to_write, mode)
 
     def read_stock_data(self, ticker, format):
         """Retrieves stock data for a given ticker in a given format from disk.
 
         Args:
             ticker: A string representing the ticker of a stock
-            format: A string representing whether the data should be in column or row format
+            format: A string representing whether the data should be in 'column' or 'row' format
 
         Returns:
             An array in either row or column format contaning the data for a given stock
@@ -76,24 +81,28 @@ class DataManager(object):
         if len(file_content) == 1:
             line_data = file_content[i].split(',')
             return {line_data[0]: float(line_data[4])}
-        # handle multi-line files
-        curr_date = datetime.datetime.strptime(file_content[len(file_content) - 1].split(',')[0], DataManager.DATE_FORMAT)
-        for i in range(len(file_content) - 1, 0, -1):
-            line_data = file_content[i - 1].split(',')
-            next_date = datetime.datetime.strptime(line_data[0], DataManager.DATE_FORMAT)
+        # handle multi-line files & fill in holes (weekends/holidays/etc) with previous data
+        for i in range(0, len(file_content) - 1):
+            curr_line_data = file_content[i].split(',')
+            next_line_data = file_content[i + 1].split(',')
+            curr_date = datetime.datetime.strptime(curr_line_data[0], DataManager.DATE_FORMAT)
+            next_date = datetime.datetime.strptime(next_line_data[0], DataManager.DATE_FORMAT)
             while curr_date < next_date:
-                price_lookup[curr_date.strftime(DataManager.DATE_FORMAT)] = float(line_data[4])
+                price_lookup[curr_date.strftime(DataManager.DATE_FORMAT)] = float(curr_line_data[4])
                 curr_date = curr_date + datetime.timedelta(1)
+        # handle last line in file separately
+        price_lookup[next_date.strftime(DataManager.DATE_FORMAT)] = float(next_line_data[4])
+
         return price_lookup
 
-    def _write_data_to_csv_file(self, filename, data):
+    def _write_data_to_csv_file(self, filename, data, mode):
         """Writes an array of data to disk in CSV format.
 
         Args:
             filename: A string representing the file to which to write
             data: An array in [[date, open, high, low, close, volume], ...] format
         """
-        with open(filename, 'w') as file:
+        with open(filename, mode) as file:
             for line in data:
                 file.write(','.join(line) + '\n')
 
@@ -152,10 +161,8 @@ class DataManager(object):
         # TODO: instead of using ranges, use a mapping from date key to row
         data = []
         file_content = self._readlines_for(ticker)
-        eof = len(file_content) - 1
-        for i in range(eof, 0, -1):
-            data.append([])
-            data[eof - i].append([value.strip() for value in file_content[i].split(',')])
+        for line in file_content:
+            data.append([value.strip() for value in line.split(',')])
         return data
 
     def _read_csv_file_columns_for(self, ticker):
@@ -174,9 +181,8 @@ class DataManager(object):
         for i in range(0, 6):
             data.append([])
         # iterate through file
-        eof = len(file_content) - 1
-        for i in range(eof, 0, -1):
-            values = file_content[i].split(',')
-            for j in range(0, 6):
-                data[j].append(values[j].strip())
+        for line in file_content:
+            values = line.split(',')
+            for i in range(0, 6):
+                data[i].append(values[i].strip())
         return data

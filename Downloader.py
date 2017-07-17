@@ -76,11 +76,11 @@ class Downloader:
             new_data = self.__download_google_csv_data(ticker, last_date)
             if not len(new_data):
                 break
-            if new_data[-1][0] >= last_date:
+            if new_data[0][0] >= last_date:
                 # new data is later than what we've read so far, i.e. it's old data
                 break
-            data += new_data
-            last_date = (datetime.datetime.strptime(new_data[-1][0], "%Y-%m-%d") - datetime.timedelta(1)).strftime("%Y-%m-%d")
+            data = new_data + data
+            last_date = (datetime.datetime.strptime(new_data[0][0], "%Y-%m-%d") - datetime.timedelta(1)).strftime("%Y-%m-%d")
         self.__write_data_to_file(ticker, data)
         return 0
 
@@ -123,8 +123,9 @@ class Downloader:
         data = []
         csv = urllib.request.urlopen(self.__google_url(ticker, date)).readlines()
         for line in csv[1:]:
-            data.append(line.decode("ASCII").strip().split(','))
-            data[-1][0] = datetime.datetime.strptime(data[-1][0], "%d-%b-%y").strftime("%Y-%m-%d")
+            data = [line.decode("ASCII").strip().split(',')] + data
+            #data.append(line.decode("ASCII").strip().split(','))
+            data[0][0] = datetime.datetime.strptime(data[0][0], "%d-%b-%y").strftime("%Y-%m-%d")
         return data
 
     ##
@@ -138,7 +139,7 @@ class Downloader:
     # TODO: moved to DataManager, should now move this out of the downloader class altogerher
     def __write_data_to_file(self, ticker, data):
         db = DataManager()
-        db.write_stock_data(ticker, data)
+        db.write_stock_data(ticker, data, True)
 
 
 ###
