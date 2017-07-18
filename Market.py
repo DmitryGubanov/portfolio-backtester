@@ -4,15 +4,31 @@ from utils import date_str, date_obj, build_price_lut
 
 from DataManager import DataManager
 
-###
-# A Market containing stocks and a date. The Market can be queried for stock prices at
-# the current date of the market
-##
-class Market:
 
-    ##
-    # initialize Market with a set of dates and stocks w/ price LUTs
+class Market(object):
+
+    """A Market containing stocks and a date.
+
+    Can be queried for stock prices at the current date of this Market
+
+    Attributes:
+        stocks: A map of stock tickers to price LUTs
+        new_period: A map of flags for market periods
+        dates: An array of dates for the market
+        date: A tuple containing (curr date index in dates, curr date)
+
+    Todo:
+        - (low priority) self.date isnt initialized in all cases
+    """
+
     def __init__(self, tickers, dates):
+        """Intialize a Market with a set of dates and stock tickers
+        with corresponding price LUTs.
+
+        Args:
+            tickers: An array of tickers for which to build price LUTs
+            dates: An array of dates
+        """
         self._db = DataManager()
         self.new_period = {'m': False, 'q': False, 'y': False}
         self.stocks = {}
@@ -23,47 +39,61 @@ class Market:
             self.dates = dates
             self.date = (0, self.dates[0])
 
-    ##
-    # creates LUTs for a given set of stocks
     def add_stocks(self, tickers):
-        for ticker in tickers:
-            self.stocks[ticker.upper()] = self._db.build_price_lut(ticker.upper())
-            #self.stocks[ticker.upper()] = build_price_lut(ticker.upper())
+        """Creates price LUTs and adds them to the Market.
 
-    ##
-    # injects provided stock data into this market - used for generated data
+        Args:
+            tickers: An array of tickers for which to create LUTs
+        """
+        for ticker in tickers:
+            self.stocks[ticker.upper()] \
+                = self._db.build_price_lut(ticker.upper())
+
     def inject_stock_data(self, ticker, dates, prices):
+        """Injects provided stock data into this market.
+
+        Generally used for generated data, but can be used in any case
+        to bypass the default price LUT creation method.
+
+        Args:
+            ticker: A ticker for which to inject data
+            dates: An array of dates corresponding to the prices
+            prices: An array of prices corresponding to the dates
+        """
         price_lut = {}
         for i in range(0, len(dates)):
             price_lut[dates[i]] = prices[i]
         self.stocks[ticker.upper()] = price_lut
 
-    ##
-    # returns the current date of the Market
     def current_date(self):
+        """Returns the current date of this Market.
+
+        Returns:
+            A string representing the current date in this Market
+        """
         return self.date[1]
 
-    ##
-    # queries a stock at today's date
     def query_stock(self, ticker):
+        """Query a stock at the current date.
+
+        Args:
+            ticker: A ticker to query
+
+        Returns:
+            A float representing the price of the stock
+        """
         try:
             return float(self.stocks[ticker.upper()][self.date[1]])
         except KeyError:
-            # TODO
             print("NEEDS FIX: no data for " + ticker + " at " + self.date[1])
             return 0
 
-    #def __recursive_query_stock(self, ticker, date_idx):
-    #    if date_idx < 0:
-    #        return 0
-    #    try:
-    #        return float(self.stocks[ticker][self.dates[date_idx]])
-    #    except KeyError:
-    #        return self.__recursive_query_stock(ticker, date_idx - 1)
-
-    ##
-    # sets the market to a certain date
     def set_date(self, date):
+        """Sets this Market to a given date.
+
+        Args:
+            date: A date to which to set this Market
+        """
         if date < self.dates[0]:
             self.date = (0, self.dates[0])
             return 0
@@ -74,14 +104,15 @@ class Market:
             self.date = (self.dates.index(date), date)
             return 0
         except ValueError:
-            # TODO
             print("NEEDS FIX: date does not exist")
             return 1
-            #return self.set_date(date_str(date_obj(date) + datetime.timedelta(1)))
 
-    ##
-    # adjusts the current date range to a range in which all market's stocks have data
     def set_default_dates(self):
+        """Sets a default range for this Market's dates.
+
+        Based on existing stocks in this Market, decides an appropriate
+        range in which all stocks have prices.
+        """
         date_range = (date_str(dt.fromordinal(1)),
                       date_str(dt.fromordinal(999999)))
         for price_lut in self.stocks.values():
@@ -93,15 +124,13 @@ class Market:
             self.dates = dates[date_idxs[0]:date_idxs[1] + 1]
         self.date = (0, self.dates[0])
 
-    ##
-    # advances the day by one
     def advance_day(self):
+        """Advances this Market's date by one day."""
         self.date = (self.date[0] + 1, self.dates[self.date[0] + 1])
-        self.__raise_period_flags()
+        self._raise_period_flags()
 
-    ##
-    # raises a flag if a new period has started (monthl, quarter, year...)
-    def __raise_period_flags(self):
+    def _raise_period_flags(self):
+        """Internal function to handle setting flags at new periods."""
         last_date = date_obj(self.dates[self.date[0] - 1])
         curr_date = date_obj(self.date[1])
         self.new_period = {'m': False, 'q': False, 'y': False}

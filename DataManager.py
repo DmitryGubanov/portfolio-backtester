@@ -108,8 +108,8 @@ class DataManager(object):
             next_date = datetime.datetime.strptime(
                 next_line_data[0], DataManager.DATE_FORMAT)
             while curr_date < next_date:
-                price_lookup[curr_date.strftime(DataManager.DATE_FORMAT)] = \
-                    float(curr_line_data[4])
+                price_lookup[curr_date.strftime(DataManager.DATE_FORMAT)] \
+                    = float(curr_line_data[4])
                 curr_date = curr_date + datetime.timedelta(1)
         # handle last line in file separately
         price_lookup[next_date.strftime(
