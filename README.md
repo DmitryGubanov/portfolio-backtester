@@ -17,9 +17,9 @@ Short-term:
 
 x separate into different files  
 x create Downloader class to handle downloading data and putting it into consistent format  
-x implement new way to get data (typical yahoo way was shut down) (chose to use google)
+x implement new way to get data (typical yahoo way was shut down) (chose to use google)  
 x create Trader class to handle trading logic (placing orders, etc.)  
-x compare information against known/real data to verify accuracy
+x compare information against known/real data to verify accuracy  
 o reimplement withdrawals   
 o weird behaviour: withdrawals can lead to negative cash values  
 x separate Downloader into Downloader and DataManager classes  
@@ -27,7 +27,7 @@ x DataManager feature: option to append to existing data instead of overwriting
 x DataManager feature: fills in gaps (weekends/holidays) in LUT w/ previous last known value - makes code for querying simpler, especially between stocks in markets w/ diff. holidays  
 o rewrite Market as a singleton instead of an instantiated class  
 o rewrite some methods in Simulator to fit Market and Trader better  
-o Stats needs to be reworked completely
+o Stats needs to be reworked completely  
 
 Long-term:
 
