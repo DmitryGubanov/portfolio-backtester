@@ -5,6 +5,7 @@ import datetime
 import argparse
 from DataManager import DataManager
 
+
 class Downloader(object):
 
     """A Downloader that handles downloading stock data and returning it in a consitent format.
@@ -56,7 +57,8 @@ class Downloader(object):
         data = []
         last_date = datetime.date.today().strftime("%Y-%m-%d")
         if not quiet:
-            print('Downloading {} data from Google'.format(ticker), end='', flush=True)
+            print('Downloading {} data from Google'.format(
+                ticker), end='', flush=True)
         while True:
             new_data = self._download_google_csv_data(ticker, last_date)
             if not quiet:
@@ -66,7 +68,8 @@ class Downloader(object):
             if new_data[0][0] >= last_date:
                 break
             data = new_data + data
-            last_date = (datetime.datetime.strptime(new_data[0][0], "%Y-%m-%d") - datetime.timedelta(1)).strftime("%Y-%m-%d")
+            last_date = (datetime.datetime.strptime(
+                new_data[0][0], "%Y-%m-%d") - datetime.timedelta(1)).strftime("%Y-%m-%d")
         if not quiet:
             print('')
         return data
@@ -103,7 +106,8 @@ class Downloader(object):
             query = '{}%3A{}'.format(special_cases[ticker.upper()], ticker)
         except KeyError:
             query = '{}'.format(ticker)
-        enddate = '{}%20{},%20{}'.format(dt.strftime('%b'), dt.strftime('%d'), dt.strftime('%Y'))
+        enddate = '{}%20{},%20{}'.format(dt.strftime(
+            '%b'), dt.strftime('%d'), dt.strftime('%Y'))
         output = 'csv'
         return '{}?q={}&enddate={}&output={}'.format(base, query, enddate, output)
 
@@ -120,10 +124,12 @@ class Downloader(object):
             - error handling for urllib request
         """
         data = []
-        csv = urllib.request.urlopen(self._google_url(ticker, date)).readlines()
+        csv = urllib.request.urlopen(
+            self._google_url(ticker, date)).readlines()
         for line in csv[1:]:
             data = [line.decode("ASCII").strip().split(',')] + data
-            data[0][0] = datetime.datetime.strptime(data[0][0], "%d-%b-%y").strftime("%Y-%m-%d")
+            data[0][0] = datetime.datetime.strptime(
+                data[0][0], "%d-%b-%y").strftime("%Y-%m-%d")
         return data
 
 
@@ -139,6 +145,7 @@ def download_and_write(ticker, source):
         print("No data downloaded for {}".format(ticker))
         return
     db.write_stock_data(ticker, data, True)
+
 
 def main():
     """Wrapper for main logic."""
@@ -159,11 +166,15 @@ def main():
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Downloader for historical stock data.")
+    parser = argparse.ArgumentParser(
+        description="Downloader for historical stock data.")
     download_group = parser.add_mutually_exclusive_group(required=True)
-    download_group.add_argument('--download', nargs='+', help='the stock ticker(s) to download')
-    download_group.add_argument('--download-from', nargs='+', help='file(s) containing the stock tickers to download')
-    parser.add_argument('--using', default='google', nargs=1, help='a source/API from which to get the data, default: google')
+    download_group.add_argument('--download', nargs='+',
+        help='the stock ticker(s) to download')
+    download_group.add_argument('--download-from', nargs='+',
+        help='file(s) containing the stock tickers to download')
+    parser.add_argument('--using', default='google', nargs=1,
+        help='a source/API from which to get the data, default: google')
 
     downloader = Downloader()
     db = DataManager()
