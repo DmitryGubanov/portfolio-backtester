@@ -126,8 +126,10 @@ class DataManager(object):
         Returns:
             An array with each element containing a line of the file for the given ticker
         """
-        with open(self._filename_for(ticker), 'r') as file:
-            lines = [line.strip() for line in file]
+        lines = []
+        if self._has_file_for(ticker):
+            with open(self._filename_for(ticker), 'r') as file:
+                lines = [line.strip() for line in file]
         return lines
 
     def _has_file_for(self, ticker):
