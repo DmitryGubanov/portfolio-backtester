@@ -8,15 +8,22 @@ from DataManager import DataManager
 
 class Downloader(object):
 
-    """A Downloader that handles downloading stock data and returning it in a consitent format.
+    """A Downloader that handles downloading stock data and returning
+    it in a consitent format.
 
     Currently only supports downloading from Google Finance API.
-    Stores data in CSV format, without header row, in Date,Open,High,Low,Close,Volume format.
+    Stores data in CSV format with Date,Open,High,Low,Close,Volume
+    columns.
+
+    Attributes:
+        sources: mapping of source string to handler method
 
     Todo:
         - (low priority) implement yahoo downloading as backup
-        - (low priority) implement only downloading missing data, rather than all
-        - (low priority) implement way to verify data, and downloading holes from 2nd source
+        - (low priority) implement only downloading missing data,
+            rather than all
+        - (low priority) implement way to verify data, and downloading
+            holes from 2nd source
     """
 
     def __init__(self):
@@ -29,12 +36,14 @@ class Downloader(object):
     def download(self, ticker, preferred_source, quiet=True):
         """Downloads and returns stock data for a ticker from a source.
 
-        A simple routing method that uses a (source -> download method) mapping.
+        A simple routing method that uses a (source -> download method)
+        mapping.
 
         Args:
             ticker: A string representing the ticker of a stock
             preferred_source: A string representing a download source
-            quiet: A boolean for whether or not to print progress feedback, default: True
+            quiet: A boolean for whether or not to print progress
+                feedback, default: True
 
         Returns:
             An array containing the stock data in chronological order
@@ -44,12 +53,16 @@ class Downloader(object):
     def _download_using_google(self, ticker, quiet=True):
         """Downloads and returns stock data from Google.
 
-        A method that acts as a wrapper for logic pertaining to downloading from Google specifically.
-        Unless start date is known, Google will only provide one year at a time. So this method downloads one year at a time until no new data is downloaded.
+        A method that acts as a wrapper for logic pertaining to
+        downloading from Google specifically. Unless start date is
+        known, Google will only provide one year at a time. So this
+        method downloads one year at a time until no new data is
+        downloaded.
 
         Args:
             ticker: A string representing the ticker of a stock
-            quiet: A boolean for whether or not to print progress feedback, default: True
+            quiet: A boolean for whether or not to print progress
+                feedback, default: True
 
         Returns:
             An array of stock data in chronological order
@@ -57,8 +70,8 @@ class Downloader(object):
         data = []
         last_date = datetime.date.today().strftime("%Y-%m-%d")
         if not quiet:
-            print('Downloading {} data from Google'.format(
-                ticker), end='', flush=True)
+            print('Downloading {} data from Google'.format(ticker),
+                  end='', flush=True)
         while True:
             new_data = self._download_google_csv_data(ticker, last_date)
             if not quiet:
@@ -68,8 +81,8 @@ class Downloader(object):
             if new_data[0][0] >= last_date:
                 break
             data = new_data + data
-            last_date = (datetime.datetime.strptime(
-                new_data[0][0], "%Y-%m-%d") - datetime.timedelta(1)).strftime("%Y-%m-%d")
+            last_date = (datetime.datetime.strptime(new_data[0][0], "%Y-%m-%d")
+                         - datetime.timedelta(1)).strftime("%Y-%m-%d")
         if not quiet:
             print('')
         return data
@@ -77,8 +90,9 @@ class Downloader(object):
     def _download_using_yahoo(self, ticker):
         """Downloads and returns stock data from Yahoo Finance.
 
-        Not implemented, since Google is sufficient for my purposes at the moment.
-        However, it will need to scrape a cookie from a response header and then use it to request data
+        Not implemented, since Google is sufficient for my purposes at
+        the moment. However, it will need to scrape a cookie from a
+        response header and then use it to request data
         NOTE: some people reported the above method doesnt work anymore
 
         Args:
@@ -94,9 +108,10 @@ class Downloader(object):
 
         Args:
             ticker: A string representing the ticker to download
-            date: A string in 'YYYY-MM-DD' format representing the end date for the data
+            date: A string in 'YYYY-MM-DD' format representing the end
+                date for the data
         """
-        # special cases 'hack' until implement better way to handle weirdness of Google API
+        # special cases 'hack' to handle weirdness of Google API
         special_cases = {
             'TLT': 'NASDAQ'
         }
@@ -106,19 +121,23 @@ class Downloader(object):
             query = '{}%3A{}'.format(special_cases[ticker.upper()], ticker)
         except KeyError:
             query = '{}'.format(ticker)
-        enddate = '{}%20{},%20{}'.format(dt.strftime(
-            '%b'), dt.strftime('%d'), dt.strftime('%Y'))
+        enddate = '{}%20{},%20{}'.format(
+            dt.strftime('%b'), dt.strftime('%d'), dt.strftime('%Y'))
         output = 'csv'
-        return '{}?q={}&enddate={}&output={}'.format(base, query, enddate, output)
+        return '{}?q={}&enddate={}&output={}'.format(
+            base, query, enddate, output)
 
     def _download_google_csv_data(self, ticker, date):
-        """Handler for making a URL request to Google and interpretting the data.
+        """Handler for making a URL request to Google and interpretting
+        the data.
 
-        Requests data from Google via a URL and converts the data to [[date, open, high, low, close, volume], ...] format.
+        Requests data from Google via a URL and converts the data to
+        [[date, open, high, low, close, volume], ...] format.
 
         Args:
             ticker: A string representing the ticker of a stock
-            date: A string in YYYY-MM-DD format representing the end date for the request
+            date: A string in YYYY-MM-DD format representing the end
+                date for the request
 
         Todo:
             - error handling for urllib request
@@ -168,13 +187,15 @@ def main():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Downloader for historical stock data.")
+    parser.add_argument('--using', default='google', nargs=1,
+                        help=('a source/API from which to get the data, '
+                              'default: google'))
     download_group = parser.add_mutually_exclusive_group(required=True)
     download_group.add_argument('--download', nargs='+',
-        help='the stock ticker(s) to download')
+                                help='the stock ticker(s) to download')
     download_group.add_argument('--download-from', nargs='+',
-        help='file(s) containing the stock tickers to download')
-    parser.add_argument('--using', default='google', nargs=1,
-        help='a source/API from which to get the data, default: google')
+                                help=('file(s) containing the stock tickers to'
+                                      'download'))
 
     downloader = Downloader()
     db = DataManager()
