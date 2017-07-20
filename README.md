@@ -20,19 +20,17 @@ x create Downloader class to handle downloading data and putting it into consist
 x implement new way to get data (typical yahoo way was shut down) (chose to use google)  
 x create Trader class to handle trading logic (placing orders, etc.)  
 x compare information against known/real data to verify accuracy  
-o reimplement withdrawals   
-o weird behaviour: withdrawals can lead to negative cash values  
 x separate Downloader into Downloader and DataManager classes  
 x DataManager feature: option to append to existing data instead of overwriting  
 x DataManager feature: fills in gaps (weekends/holidays) in LUT w/ previous last known value - makes code for querying simpler, especially between stocks in markets w/ diff. holidays  
-o rewrite Market as a singleton instead of an instantiated class  
 o rewrite some methods in Simulator to fit Market and Trader better  
-o Stats needs to be reworked completely  
 o Simulator should provide the Market to the Trader  
+o reimplement withdrawals  
+o Stats needs to be reworked completely  
 
 Long-term:
 
-o (v3) interface (e.g. web)  
+o interface (e.g. web)  
 o trades based on indicators  
 o dynamic portfolio ratios depending on conditions
 o benchmarks
@@ -92,3 +90,6 @@ v2.4, validation, cleanup, and fixes
 - separate download logic into own Downloader class
 - implement downloading from google, since yahoo stopped their free/easy to use service
 - separated all classes into own files and put all util classes/functions into own file
+- implement Trader class for trading logic
+- implement DataManager class for managing data on disk
+- rewrote all files to follow PEP-8 and Google docstrings coding style
