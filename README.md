@@ -28,6 +28,7 @@ x DataManager feature: fills in gaps (weekends/holidays) in LUT w/ previous last
 o rewrite Market as a singleton instead of an instantiated class  
 o rewrite some methods in Simulator to fit Market and Trader better  
 o Stats needs to be reworked completely  
+o Simulator should provide the Market to the Trader  
 
 Long-term:
 

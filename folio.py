@@ -328,7 +328,7 @@ def main():
         my_sim.add_trader(my_trader)
         #my_sim.add_portfolio(my_portfolio)
         my_sim.set_market(my_market)
-        my_sim.define_rebalancing(args.portfolio[3])
+        #my_sim.define_rebalancing(args.portfolio[3])
         if args.portfolio[4]:
             my_sim.set_start_date(args.portfolio[4])
         if args.portfolio[5]:

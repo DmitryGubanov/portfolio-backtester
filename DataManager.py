@@ -22,9 +22,12 @@ class DataManager(object):
             stored on disk
 
     Todo:
-        - (low priority) create independent market open reference dates
-        - (low priority) implement reading csv rows to return map
-        - (low priority) implement reading csv columns to return map
+        - [code improvement, low priority] create independent market
+            open reference dates
+        - [code improvement, low priority] implement reading csv rows
+            to return map
+        - [code improvement, low priority] implement reading csv
+            columns to return map
     """
 
     def __init__(self, data_location='data/'):

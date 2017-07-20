@@ -19,9 +19,11 @@ class Portfolio(object):
             (potentially deprecated)
 
     Todo:
-        - (low priority) holding_values is sort of unnecessary
-        - (low priority) portfolio interacts with singleton Market for
-            market prices and commissions, instead of taking those args
+        - [code improvement, low priority] holding_values is sort of
+            unnecessary
+        - [code improvement, low priority] portfolio interacts with
+            Market for market prices and commissions, instead of taking
+            those args
     """
 
     def __init__(self, cash=0):

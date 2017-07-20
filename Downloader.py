@@ -19,11 +19,12 @@ class Downloader(object):
         sources: mapping of source string to handler method
 
     Todo:
-        - (low priority) implement yahoo downloading as backup
-        - (low priority) implement only downloading missing data,
-            rather than all
-        - (low priority) implement way to verify data, and downloading
-            holes from 2nd source
+        - [code improvement, low priority] implement yahoo downloading
+            as backup
+        - [code improvement, low priority] implement only downloading
+            missing data, rather than all
+        - [code improvement, low priority] implement way to verify
+            data, and downloading holes from 2nd source
     """
 
     def __init__(self):

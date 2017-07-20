@@ -1,6 +1,6 @@
 from datetime import datetime as dt
 
-from utils import date_str, date_obj, build_price_lut
+from utils import date_str, date_obj
 
 from DataManager import DataManager
 
@@ -18,7 +18,6 @@ class Market(object):
         date: A tuple containing (curr date index in dates, curr date)
 
     Todo:
-        - (low priority) self.date isnt initialized in all cases
     """
 
     def __init__(self, tickers, dates):
@@ -34,7 +33,8 @@ class Market(object):
         self.stocks = {}
         if tickers != None:
             self.add_stocks(tickers)
-        self.dates = None
+        self.dates = []
+        self.date = (-1, None)
         if dates != None:
             self.dates = dates
             self.date = (0, self.dates[0])

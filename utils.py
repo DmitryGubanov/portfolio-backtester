@@ -1,7 +1,11 @@
-#############
-# A collection of utility classes and functions to be used throughout the different
-# files and classes in this project
-###########
+"""A collection of utility classes and methods to be used throughout
+the diferent modules and classes in this project.
+
+Todo:
+    - [code improvement, low priority] rewrite nearest_index using
+        next() and enumerate()
+    - [for fun, low priority] run benchmark on nearest_date_index
+"""
 
 import datetime
 from datetime import datetime as dt
@@ -15,107 +19,144 @@ DATE_FORMAT = "%Y-%m-%d"
 # CLASSES
 #####
 
-###
-# A look up table/mapping of values to averages. Given a set of keys and values and a step range,
-# calculates the average value for all steps based on the keys that lie in those steps
-# e.g. if step = 1, (keys,values) = (1.1, 10), (2.3, 5), (2.5, 3), then the LUT it will build is:
-#      0 to 2   -> 10 (0 to 2 is steps 0 to 1, and 1 to 2, which has (1.1, 10))
-#      2 to inf -> 4  (2 to inf is steps 2 to 3, 3 to 4, ... etc, which has (2.3, 5), (2.5, 3))
-# Used for calculating the average "near" certain values, given enough data for such a
-# notion to be useful, but not enough data to have an average for every single value
-##
-class SteppedAvgLookup:
 
-    ##
-    # initializes an empty lookup and then builds it based on given values
+class SteppedAvgLookup(object):
+
+    """A look up table/mapping of values to averages..
+
+    Given a set of keys and values and a step range, calculates the
+    average value for all steps based on the keys that lie in those
+    steps.
+    e.g. if step = 1, (keys,values) = (1.1, 10), (2.3, 5), (2.5, 3),
+        then the LUT it will build is:
+            0 to 2   -> 10 (0 to 2 is steps 0 to 1, and 1 to 2,
+                            which has pairs (1.1, 10))
+            2 to inf -> 4  (2 to inf is steps 2 to 3, 3 to 4, ... etc,
+                            which has pairs (2.3, 5), (2.5, 3))
+
+    Used for calculating the average "near" certain values, given
+    enough data for such a notion to be useful, but not enough data
+    to have an average for every single value.
+
+    Currently, primary use is estimating an ETF's true leverage factor
+    at its underlying asset's movement, e.g. UPRO and SPY. There is
+    enough data (every day between July 2009 and today) to estimate
+    how UPRO moves relative to SPY (supposedly 3x, but in reality it
+    varies) at a given movement of SPY.
+    """
+
     def __init__(self, step, keys, vals):
-        self.__lut = {}
-        self.__num_points = {}
-        self.__build_lut(step, keys, vals)
+        """Initializes an empty lookup and then builds it based on the
+        given values.
 
-    ##
-    # gets the average at the nearest key greater than the given value
+        Args:
+            step: A value specifying the step size, while a higher
+                value may give more precision, that does not always
+                imply more accuracy
+            keys: An array of keys which correspond to the values
+            vals: An array of values which correspond to the keys
+        """
+        self._lut = {}
+        self._num_points = {}
+        self._build_lut(step, keys, vals)
+
     def get(self, val):
-        for key in sorted(self.__lut.keys()):
-            if val < key:
-                return self.__lut[key]
+        """Gets the average at the neatest key greater than the given
+        value.
 
-    ##
-    # gets the number of points at each step (used for calculating average)
+        Args:
+            val: A value for which an average is wanted
+
+        Returns:
+            A value corresponding the the average at the given value
+        """
+        for key in sorted(self._lut.keys()):
+            if val < key:
+                return self._lut[key]
+
     def get_num_points(self, val):
-        for key in sorted(self.__num_points.keys()):
-            if val < key:
-                return self.__num_points[key]
+        """Returns the number of data points at the given step.
 
-    ##
-    # internal function for building the LUT
-    def __build_lut(self, step, keys, vals):
+        Used internally for calculating averages.
+
+        Args:
+            val: A value for which the number of data points is wanted
+
+        Returns:
+            A value corresponding to the number of data points at the
+            given value
+        """
+        for key in sorted(self._num_points.keys()):
+            if val < key:
+                return self._num_points[key]
+
+    def _build_lut(self, step, keys, vals):
+        """Internal function for building the LUT.
+
+        Args:
+            step: A value specifying the step size, while a higher
+                value may give more precision, that does not always
+                imply more accuracy
+            keys: An array of keys which correspond to the values
+            vals: An array of values which correspond to the keys
+        """
         for i in range(int(min(keys) // step), int(max(keys) // step)):
-            self.__lut[i * step] = 0
-            self.__num_points[i * step] = 0
-        self.__lut[float("inf")] = 0
-        self.__num_points[float("inf")] = 0
-        steps = sorted(self.__lut.keys())
+            self._lut[i * step] = 0
+            self._num_points[i * step] = 0
+        self._lut[float("inf")] = 0
+        self._num_points[float("inf")] = 0
+        steps = sorted(self._lut.keys())
         for i in range(0, len(keys)):
             for j in range(0, len(steps)):
                 if keys[i] < steps[j]:
-                    self.__lut[steps[j]] = ((self.__lut[steps[j]] * self.__num_points[steps[j]] + vals[i]) /
-                                            (self.__num_points[steps[j]] + 1))
+                    self._lut[steps[j]] = \
+                        ((self._lut[steps[j]]
+                          * self._num_points[steps[j]] + vals[i])
+                         / (self._num_points[steps[j]] + 1))
                     break
-        for key in sorted(self.__lut.keys()):
-            if self.__lut[key] == 0:
-                del self.__lut[key]
+        for key in sorted(self._lut.keys()):
+            if self._lut[key] == 0:
+                del self._lut[key]
 
 
 ######
 # FUNCTIONS
 #####
 
-##
-# the filename of the data for a given ticker
-# TODO: moved as private methord to DataManager, think of replacing all uses of this in main code
-def filename(ticker):
-    return STOCK_DIR + ticker + ".csv"
-
-
-##
-# like traditional readlines, just also does some boilerplate stuff
-# TODO: moved as private methord to DataManager, think of replacing all uses of this in main code
-def readlines(filename):
-    with open(filename, 'r') as file:
-        lines = [line.strip() for line in file]
-    return lines
-
-
-##
-# nicer looking wrapper for converting to currency format
 def currency(number):
+    """Nicer looking wrapper for converting to currency format.
+
+    Args:
+        number: A number value to covert to currency format
+
+    Returns:
+        A number in currency format
+    """
     return "{0:.2f}".format(float(number))
 
 
-##
-# nicer looking wrapper for converting to percent format
 def percent(number):
+    """Nicer looking wrapper for converting to percent format.
+
+    Args:
+        number: A number value to covert to percent format
+
+    Returns:
+        A number in percent format
+    """
     return "{0:.2f}".format(float(number * 100))
 
 
-##
-# the yahoo URL to the yahoo finance API for a given ticker
-# NOTE deprecated, since yahoo discontinued this service
-def yahoo_url(ticker):
-    return "http://ichart.finance.yahoo.com/table.csv?s=" + ticker
-
-
-##
-# nicer looking wrapper for checking if a file exists
-# TODO: moved as private methord to DataManager, think of replacing all uses of this in main code
-def has_file(ticker):
-    return os.path.isfile(filename(ticker))
-
-
-##
-# takes a date str or datetime/date object and returns the equivalent datetime object
 def date_obj(date):
+    """Returns the equivalent datetime object for the given date or
+    date object.
+
+    Args:
+        number: A date string or date/datetime object
+
+    Returns:
+        A datetime object representing the given date
+    """
     if type(date) is dt:
         return date
     if type(date) is datetime.date:
@@ -123,83 +164,79 @@ def date_obj(date):
     return dt.strptime(date, DATE_FORMAT)
 
 
-##
-# takes a date string of datetime/date object and returns the equivalent date string
 def date_str(date):
+    """Returns the equivalent date string for the given date or
+    date object.
+
+    Args:
+        number: A date string or date/datetime object
+
+    Returns:
+        A date string representing the given date
+    """
     if type(date) is str:
         return date
     return date.strftime(DATE_FORMAT)
 
 
-##
-# returns the rows of a CSV file, where each row is an array
-# TODO: moved as private method to DataManager, think of replacing all uses of this in main code
-def read_csv_file_rows(filename):
-    data = []
-    file_content = readlines(filename)
-    if file_content == 0:
-        return data
-    eof = len(file_content) - 1
-    for i in range(eof, 0, -1):
-        data.append([])
-        for value in file_content[i].split(','):
-            data[eof - i].append(value.strip())
-    return data
-
-
-##
-# returns the columns of a CSV file, where each column is an array
-# TODO: moved as private method to DataManager, think of replacing all uses of this in main code
-def read_csv_file_columns(filename):
-    try:
-        file = open(filename)
-    except FileNotFoundError as e:
-        print("error: no such file '" + filename + "'")
-        return []
-    data = []
-    for line in file:
-        values = line.split(',')
-        for i in range(0, len(values)):
-            if len(data) < len(values):
-                data.append([])
-            data[i].append(values[i].strip())
-    for i in range(0, len(values)):
-        del data[i][0]
-        data[i] = data[i][::-1]
-    file.close()
-    return data
-
-
-##
-# writes a list to a newline separated file
-# TODO: doesnt seem like a useful stock function, but something that is done once manually
 def write_list_to_file(list, filename, overwrite):
+    """Writes a list to a newline separated file.
+
+    Args:
+        list: An array/list to write to file
+        filename: A filename of a file to which to write
+        overwrite: A boolean for whether or not to overwrite an
+            existing file
+
+    Returns:
+        Number of lines written
+    """
     if overwrite and os.path.isfile(filename):
         os.remove(filename)
     written = 0
-    with open(filename, 'w') as file:
+    with open(filename, 'a') as file:
         for item in list:
             written += 1
             file.write(item + '\n')
     return written
 
 
-##
-# extracts a specific column from a CSV file, given a split char and chars to remove
-# NOTE really specific use case and might be removed
 def list_from_csv(filename, col, s_char, r_chars):
+    """Extracts a specific column from a CSV file, given a split char.
+    Also removes all given chars from the values.
+
+    Args:
+        filename: A filename of a CSV file
+        col: A value for a column in a CSV file
+        s_char: A character representing a delimiter
+        r_chars: An array of characters to remove
+
+    Returns:
+        An array of values corresponding to the stripped column
+    """
     lines = readlines(filename)
-    l = []
+    with open(filename, 'r') as file:
+        lines = [line.strip() for line in file]
+    column_lines = []
     for i in range(1, len(lines)):
-        l.append(lines[i].split(s_char)[col].strip())
+        column_lines.append(lines[i].split(sfilname_char)[col].strip())
         for r in r_chars:
-            l[-1] = l[-1].replace(r, '')
-    return l
+            column_lines[-1] = column_lines[-1].replace(r, '')
+    return column_lines
 
 
-##
-# Subtracts the period from the given date, returns date in same type as input
 def subtract_date(period, unit, date):
+    """Subtracts the period from the given date, returns date in same
+    type as input.
+
+    Args:
+        period: A period value, e.g. 3 (for 3 days/months/years)
+        unit: A unit for the period, e.g. 'm' for month
+        date: A date from which to subtract
+
+    Returns:
+        A new date value in the same type as input
+    """
     diffs = {'y': 0, 'm': 0, 'd': 0}
     diffs[unit.lower()] = int(period)
     new = {}
@@ -217,14 +254,29 @@ def subtract_date(period, unit, date):
     return new_date
 
 
-##
-# given a value, finds the index of the nearest value before/after said value
-# val_type is for implemented optimizations, currently supports:
-# - 'date' for arrays of dates
-def nearest_index(val, vals, direction, val_type):
+def nearest_index(val, vals, direction, val_type=None):
+    """Given a value, finds the index of the nearest value before/after
+    said value in an array of values.
+
+    Using val_type uses an optimization. Currently only supports
+    'date' as a val_type, since dates are relatively predictable in
+    their distribution.
+
+    Args:
+        val: A value for which to find the nearest value in values
+        vals: An array of values to look through
+        direction: A 'direction' (-1 or +1) for looking, i.e. to look
+            for a nearest lower value or nearest higher value
+        val_type: A type of value - used for optimizations
+
+    Returns:
+        An index for the nearest value, -1 otherwise
+    """
     if val_type == 'date':
         return nearest_date_index(val, vals, direction)
-    if len(vals) == 0 or (vals[-1] < val and direction > 0) or (vals[0] > val and direction < 0):
+    if (len(vals) == 0
+        or (vals[-1] < val and direction > 0)
+        or (vals[0] > val and direction < 0)):
         return -1
     if direction > 0 and vals[0] > val:
         return 0
@@ -238,11 +290,22 @@ def nearest_index(val, vals, direction, val_type):
     return -1
 
 
-##
-# optimization for nearest index for date types. approximates where the date would be based on
-# starting and ending dates in list and starts search there. in practise, only takes a few steps
-# TODO: for fun, run some benchmarks just to see
 def nearest_date_index(date, dates, direction):
+    """Optimization for nearest index for date types.
+
+    Approximates where the date would be based on starting and ending
+    dates in list and starts search there. In practise, only takes a
+    few steps.
+
+    Args:
+        date: A date for which to find the nearest date in dates
+        dates: An array of dates to look through
+        direction: A 'direction' (-1 or +1) for looking, i.e. to look
+            for a nearest lower value or nearest higher value
+
+    Returns:
+        An index for the nearest date
+    """
     if len(dates) == 0 or date_str(dates[-1]) < date_str(date):
         return -1
     if date_str(dates[0]) >= date_str(date):
@@ -263,20 +326,10 @@ def nearest_date_index(date, dates, direction):
         while date_str(dates[i - 1]) >= date_str(date):
             i -= 1
     if direction == 0:
-        return min([i, i - 1], key=lambda x: abs((date_obj(dates[x]) - date_obj(date)).days))
+        return min([i, i - 1],
+                   key=lambda x: abs((date_obj(dates[x])
+                                      - date_obj(date)).days))
     if direction < 0:
         return i - 1
     if direction > 0:
         return i
-
-
-##
-# Builds a dictionary from a file, dates as keys and prices as values
-# TODO: moved as public method to DataManager, think of replacing all uses of this in main code
-def build_price_lut(ticker):
-    price_lookup = {}
-    file_content = readlines(filename(ticker))
-    for i in range(0, len(file_content)):
-        price_lookup[file_content[i].split(',')[0]] = float(
-            file_content[i].split(',')[4])
-    return price_lookup
