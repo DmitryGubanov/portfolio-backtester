@@ -90,18 +90,10 @@ class Simulator(object):
             -1 if a setup error occurs
             0  otherwise
         """
-        err = 0
-        err += self._init_market()
-        err += self._init_simulation_dates()
-        err += self.trader.initialize_portfolio()
-        if err:
+        if self._init_market() or self._init_dates() or self._init_portfolio():
             return -1
-
         while self.market.current_date() < self.dates_testing[1]:
             self.market.advance_day()
-            holdings = list(self.trader.portfolio.holdings.keys())
-            self.trader.portfolio.update_holdings_values(
-                holdings, [self.market.query_stock(x) for x in holdings])
             self.trader.adjust_portfolio()
             self._record_stats()
         return 0
@@ -122,7 +114,7 @@ class Simulator(object):
             self.market.set_default_dates()
         return 0
 
-    def _init_simulation_dates(self):
+    def _init_dates(self):
         """Initializes/resets the testing dates for this Simulator
 
         Returns:
@@ -142,6 +134,14 @@ class Simulator(object):
         self.dates_set = (True, True)
         return 0
 
+    def _init_portfolio(self):
+        """Initializes/resets the Portfolio(s) for this Simulator.
+
+        Returns:
+            A return code from Trader's initialize portfolio method
+        """
+        return self.trader.initialize_portfolio()
+
     def _init_stats(self):
         """Initializes/resets the stats for this Simulator."""
         self.stats = {}
@@ -160,9 +160,10 @@ class Simulator(object):
         # asset allocation
         assets = sorted(self.trader.assets_of_interest)
         self.stats[self.stat_keys[1]][0].append(self.market.current_date())
-        alloc = [abs(self.trader.portfolio.holdings_values[assets[i]] /
-                     self.trader.portfolio.value())
-                 for i in range(0, len(assets))]
+        alloc = [(float(self.market.query_stock(asset))
+                 * int(self.trader.portfolio.holdings[asset])
+                 / self.trader.portfolio.value()) for asset in assets]
+
         self.stats[self.stat_keys[1]][1].append(alloc)
 
         # annual returns

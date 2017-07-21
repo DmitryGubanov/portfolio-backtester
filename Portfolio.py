@@ -12,33 +12,25 @@ class Portfolio(object):
         cash: A float representing the amount of cash in this Portfolio
         total_contributions: A counter for contributions
         holdings: A mapping of holdings to a number of shares
-        holdings_values: A mapping of holdings to a cash value
-        assets: A map of assets to a ratio
-            (potentially deprecated)
-        assets_types: A map of assets to either 'long' or 'short'
-            (potentially deprecated)
 
     Todo:
-        - [code improvement, low priority] holding_values is sort of
-            unnecessary
         - [code improvement, low priority] portfolio interacts with
             Market for market prices and commissions, instead of taking
             those args
     """
 
-    def __init__(self, cash=0):
-        """Initializes an empty Portfolio.
+    def __init__(self, market, cash=0):
+        """Initializes an empty Portfolio that has access to a Market.
 
         Args:
+            market: A market instance for this Portfolio
             cash: A cash value for this Portfolio to start at,
                 default: 0
         """
+        self.market = market
         self.cash = float(cash)
         self.total_contributions = 0
         self.holdings = {}
-        self.holdings_values = {}
-        self.assets = {}
-        self.assets_types = {}
 
     def add_cash(self, amount):
         """Adds a certain amount of cash to the portfolio.
@@ -65,8 +57,6 @@ class Portfolio(object):
             self.holdings[ticker.upper()] += int(amount)
         except KeyError:
             self.holdings[ticker.upper()] = int(amount)
-        self.holdings_values[ticker.upper()] = \
-            self.holdings[ticker.upper()] * float(price)
         self.cash -= int(amount) * float(price) - float(commission)
         return 0
 
@@ -83,8 +73,6 @@ class Portfolio(object):
             self.holdings[ticker.upper()] -= int(amount)
         except KeyError:
             self.holdings[ticker.upper()] = -int(amount)
-        self.holdings_values[ticker.upper()] = \
-            self.holdings[ticker.upper()] * float(price)
         self.cash += int(amount) * float(price) - float(commission)
         return 0
 
@@ -120,25 +108,15 @@ class Portfolio(object):
         """
         self.buy(ticker, amount, price, commission)
 
-    def update_holdings_values(self, tickers, new_prices):
-        """Updates the values of all the holdings based on a new set of
-        provided prices.
-
-        Args:
-            tickers: An array of tickers for which to update values
-            prices: An array of prices to use to calculate new values
-        """
-        for i in range(0, len(tickers)):
-            self.holdings_values[tickers[i].upper()] = float(
-                new_prices[i]) * int(self.holdings[tickers[i].upper()])
-
     def value(self):
         """Returns the total value of this Portfolio (cash + holdings).
 
         Returns:
             A value correspondingto the total value of this Portfolio
         """
-        return self.cash + sum(self.holdings_values.values())
+        return self.cash + sum(
+            [float(self.holdings[asset] * self.market.query_stock(asset))
+             for asset in self.holdings.keys()])
 
     def shares_of(self, ticker):
         """Returns the number of shares this portfolio is holding of a

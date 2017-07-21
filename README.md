@@ -23,7 +23,7 @@ x compare information against known/real data to verify accuracy
 x separate Downloader into Downloader and DataManager classes  
 x DataManager feature: option to append to existing data instead of overwriting  
 x DataManager feature: fills in gaps (weekends/holidays) in LUT w/ previous last known value - makes code for querying simpler, especially between stocks in markets w/ diff. holidays  
-o rewrite some methods in Simulator to fit Market and Trader better  
+x rewrite some methods in Simulator to fit Market and Trader better  
 o Simulator should provide the Market to the Trader  
 o reimplement withdrawals  
 o Stats needs to be reworked completely  

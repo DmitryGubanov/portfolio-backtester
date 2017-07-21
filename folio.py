@@ -312,7 +312,7 @@ def main():
                 my_market.inject_stock_data(
                     args.use_generated[i * 2], data[3][0], data[0])
 
-        my_portfolio = Portfolio()
+        my_portfolio = Portfolio(my_market)
         for i in range(0, len(args.portfolio[6:]) // 3):
             my_trader.add_asset_of_interest(args.portfolio[i * 3 + 6])
             my_trader.set_desired_asset_ratio(args.portfolio[i * 3 + 6], float(args.portfolio[i * 3 + 7]))
