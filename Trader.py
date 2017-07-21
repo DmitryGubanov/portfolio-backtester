@@ -91,13 +91,10 @@ class Trader(object):
     def initialize_portfolio(self):
         """Sets up the portfolio to the current desired ratios.
         Intended to run once at start."""
-        if self.portfolio == None:
-            return -1
         self.portfolio.add_cash(self.starting_cash)
         self._calculate_desired_shares()
         self._calculate_trades_needed()
         self._execute_trades()
-        return 0
 
     def adjust_portfolio(self):
         """Decides a new portfolio asset allocation, if applicable, and

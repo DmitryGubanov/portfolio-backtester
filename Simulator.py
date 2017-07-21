@@ -146,7 +146,7 @@ class Simulator(object):
 
         # annual returns
         if (self._market.new_period['y']
-                or len(self.stats[self.stat_keys[2]][2]) == 0):
+            or len(self.stats[self.stat_keys[2]][2]) == 0):
             self.stats[self.stat_keys[2]][0].append(
                 str(date_obj(self._market.current_date()).year - 1))
             self.stats[self.stat_keys[2]][1].append(
