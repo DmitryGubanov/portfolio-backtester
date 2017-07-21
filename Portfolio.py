@@ -17,20 +17,30 @@ class Portfolio(object):
         - [code improvement, low priority] portfolio interacts with
             Market for market prices and commissions, instead of taking
             those args
+        - [code improvement, low priority] market should be private,
+            since it's not this Portfolio's market technically
     """
 
-    def __init__(self, market, cash=0):
-        """Initializes an empty Portfolio that has access to a Market.
+    def __init__(self, cash=0):
+        """Initializes an empty Portfolio.
 
         Args:
-            market: A market instance for this Portfolio
             cash: A cash value for this Portfolio to start at,
                 default: 0
         """
-        self.market = market
+        self._market = None
         self.cash = float(cash)
         self.total_contributions = 0
         self.holdings = {}
+
+    def use_market(self, market):
+        """Sets the market this Portfolio should use for looking up
+        prices.
+
+        Args:
+            market: A Market instance to use
+        """
+        self._market = market
 
     def add_cash(self, amount):
         """Adds a certain amount of cash to the portfolio.
@@ -115,7 +125,7 @@ class Portfolio(object):
             A value correspondingto the total value of this Portfolio
         """
         return self.cash + sum(
-            [float(self.holdings[asset] * self.market.query_stock(asset))
+            [float(self.holdings[asset] * self._market.query_stock(asset))
              for asset in self.holdings.keys()])
 
     def shares_of(self, ticker):

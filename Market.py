@@ -20,7 +20,7 @@ class Market(object):
     Todo:
     """
 
-    def __init__(self, tickers, dates):
+    def __init__(self, tickers=None, dates=None):
         """Intialize a Market with a set of dates and stock tickers
         with corresponding price LUTs.
 

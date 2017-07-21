@@ -299,9 +299,19 @@ def main():
         pyplot.show()
 
     if args.portfolio != None:
+        # init main objects
+        my_market = Market()
         my_trader = Trader()
-        my_market = Market(None, None)
-        my_trader.market = my_market
+        my_portfolio = Portfolio()
+        my_trader.portfolio = my_portfolio
+        my_trader.set_starting_cash(args.portfolio[0])
+
+        # init simulator
+        my_sim = Simulator()
+        my_sim.add_trader(my_trader)
+        my_sim.use_market(my_market)
+
+        # parse args
         if args.use_generated != None:
             adjustments = {'UPRO': (0.0, 0.00), 'TMF': (0.01, 0.05)}
             adjustment = (0, 0)
@@ -311,24 +321,13 @@ def main():
                     args.use_generated[i * 2], args.use_generated[i * 2 + 1], 0.00005, adjustment[0], adjustment[1])
                 my_market.inject_stock_data(
                     args.use_generated[i * 2], data[3][0], data[0])
-
-        my_portfolio = Portfolio(my_market)
         for i in range(0, len(args.portfolio[6:]) // 3):
             my_trader.add_asset_of_interest(args.portfolio[i * 3 + 6])
             my_trader.set_desired_asset_ratio(args.portfolio[i * 3 + 6], float(args.portfolio[i * 3 + 7]))
-            #my_portfolio.add_asset(args.portfolio[i * 3 + 6], float(args.portfolio[i * 3 + 7]), args.portfolio[i * 3 + 8])
-
-        my_trader.portfolio = my_portfolio
-        my_trader.set_starting_cash(args.portfolio[0])
         if args.portfolio[2] != "None" and args.portfolio[1] != "None":
             my_trader.set_strategy('contributions', [args.portfolio[2], args.portfolio[1]])
         if args.portfolio[3] != "None":
             my_trader.set_strategy('rebalancing', [args.portfolio[3]])
-        my_sim = Simulator()
-        my_sim.add_trader(my_trader)
-        #my_sim.add_portfolio(my_portfolio)
-        my_sim.set_market(my_market)
-        #my_sim.define_rebalancing(args.portfolio[3])
         if args.portfolio[4]:
             my_sim.set_start_date(args.portfolio[4])
         if args.portfolio[5]:
@@ -337,7 +336,7 @@ def main():
         port_vals = []
         port_vals.append(my_trader.starting_cash)
         my_sim.simulate()
-        port_vals.append(my_portfolio.value())
+        port_vals.append(my_trader.portfolio.value())
 
         print('initial -> $' + currency(port_vals[0]))
         print('final ---> $' + currency(port_vals[1]))
