@@ -15,6 +15,7 @@ from DataManager import DataManager
 from Market import Market
 from Portfolio import Portfolio
 from Simulator import Simulator
+from Monitor import Monitor
 from Trader import Trader
 from utils import *
 
@@ -199,6 +200,7 @@ def generate_theoretical_data(ticker_a, ticker_b, step, pos_adj, neg_adj):
 def main():
     # TODO: HUGE: this whole main is sort of a disaster of hacked together statements that I wrote whenever I wanted to output something. Will replace this whole thing completely when I start v3, i.e. the interface part of this project
 
+    db = DataManager()
     args = parser.parse_args()
 
     if args.download != None:
@@ -307,9 +309,11 @@ def main():
         my_trader.set_starting_cash(args.portfolio[0])
 
         # init simulator
+        my_monitor = Monitor(my_trader.portfolio, my_market)
         my_sim = Simulator()
         my_sim.add_trader(my_trader)
         my_sim.use_market(my_market)
+        my_sim.use_monitor(my_monitor)
 
         # parse args
         if args.use_generated != None:
@@ -335,35 +339,31 @@ def main():
         if args.portfolio[5]:
             my_sim.set_end_date(args.portfolio[5])
 
-        port_vals = []
-        port_vals.append(my_trader.starting_cash)
+        # run simulation
         my_sim.simulate()
-        port_vals.append(my_trader.portfolio.value())
 
-        print('initial -> $' + currency(port_vals[0]))
-        print('final ---> $' + currency(port_vals[1]))
-
-#    for i in range(0, len(my_sim.trade_history[0])):
-#      print(my_sim.trade_history[0][i] + ' : ' + my_sim.trade_history[1][i])
+        # print start and finish
+        print('initial -> $' + currency(my_trader.starting_cash))
+        print('final ---> $' + currency(my_trader.portfolio.value()))
 
         (dates, y) = my_sim.stats[Simulator.stat_keys[0]]
         x = [dt.strptime(d, "%Y-%m-%d").date() for d in dates]
 
         years = (x[-1] - x[0]).days / 365.25
         print('CAGR ----> ' +
-              percent((port_vals[1] / port_vals[0]) ** (1 / years) - 1) + '%')
+              percent((my_trader.portfolio.value()
+                       / my_trader.starting_cash) ** (1 / years)
+                       - 1) + '%')
 
         pyplot.subplot(411)
         pyplot.plot(x, y)
-        pyplot.grid(b=True, which='major', color='grey', linestyle='-')
+        pyplot.grid(b=False, which='major', color='grey', linestyle='-')
 
         (dates, ratios) = my_sim.stats[Simulator.stat_keys[1]]
         x = [dt.strptime(d, "%Y-%m-%d").date() for d in dates]
         y = [[ratio[i] for ratio in ratios] for i in range(0, len(ratios[0]))]
         legend = sorted(my_trader.assets_of_interest)
 
-        #print(len(x))
-        #print(len(y))
         pyplot.subplot(412)
         pyplot.stackplot(x, y, alpha=0.5)
         pyplot.grid(b=True, which='major', color='grey', linestyle='-')
@@ -421,9 +421,9 @@ def main():
         print('---')
         print('total contributions: $' + currency(my_portfolio.total_contributions))
         print('total growth: $' + currency(my_portfolio.value() -
-                                           my_portfolio.total_contributions - port_vals[0]))
+                                           my_portfolio.total_contributions - my_trader.starting_cash))
         print('adjusted CAGR: ' + percent(((my_portfolio.value() -
-                                            my_portfolio.total_contributions) / port_vals[0]) ** (1 / years) - 1) + '%')
+                                            my_portfolio.total_contributions) / my_trader.starting_cash) ** (1 / years) - 1) + '%')
 
         pyplot.show()
 
@@ -431,5 +431,4 @@ def main():
 
 
 if __name__ == "__main__":
-    db = DataManager()
     main()

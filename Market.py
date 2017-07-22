@@ -140,7 +140,7 @@ class Market(object):
         self.new_period = {'m': False, 'q': False, 'y': False}
         if last_date.year < curr_date.year:
             self.new_period = {'m': True, 'q': True, 'y': True}
-        else if last_date.month != curr_date.month:
+        elif last_date.month != curr_date.month:
             self.new_period['m'] = True
             if (curr_date.month - 1) % 3 == 0:
                 self.new_period['q'] = True

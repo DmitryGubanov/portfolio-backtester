@@ -36,6 +36,7 @@ class Simulator(object):
         """Initializes an empty simulator."""
         self._trader = None
         self._market = None
+        self._monitor = None
         self.dates_testing = (None, None)
         self._init_stats()
 
@@ -54,6 +55,14 @@ class Simulator(object):
             market: A Market instance to use
         """
         self._market = market
+
+    def use_monitor(self, monitor):
+        """Sets the Monitor for this Simulator to use.
+
+        Args:
+            monitor: A Monitor instance to use
+        """
+        self._monitor = monitor
 
     def set_start_date(self, date):
         """Sets the start date for this Simulator.
@@ -80,6 +89,7 @@ class Simulator(object):
         self._init_market()
         self._init_dates()
         self._init_trader()
+        self._monitor.init_stats()
         while self._market.current_date() < self.dates_testing[1]:
             self._market.advance_day()
             self._trader.adjust_portfolio()
