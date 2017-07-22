@@ -1,6 +1,7 @@
 from datetime import datetime as dt
 
-from utils import date_str, date_obj
+from utils import date_str
+from utils import date_obj
 
 from DataManager import DataManager
 
@@ -71,7 +72,7 @@ class Market(object):
         Returns:
             A string representing the current date in this Market
         """
-        return self.date[1]
+        return date_str(self.date[1])
 
     def query_stock(self, ticker):
         """Query a stock at the current date.
@@ -139,10 +140,7 @@ class Market(object):
         self.new_period = {'m': False, 'q': False, 'y': False}
         if last_date.year < curr_date.year:
             self.new_period = {'m': True, 'q': True, 'y': True}
-            return 0
-        if last_date.month != curr_date.month:
+        else if last_date.month != curr_date.month:
             self.new_period['m'] = True
             if (curr_date.month - 1) % 3 == 0:
                 self.new_period['q'] = True
-            return 0
-        return 0
