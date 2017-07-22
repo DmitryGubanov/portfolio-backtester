@@ -117,12 +117,15 @@ class Market(object):
                       date_str(dt.fromordinal(999999)))
         for price_lut in self.stocks.values():
             dates = sorted(price_lut.keys())
+            #print(dates)
+            #print('------------------------')
             date_range = (max(date_range[0], dates[0]), min(
                 date_range[1], dates[-1]))
             date_idxs = (dates.index(
                 date_range[0]), dates.index(date_range[1]))
             self.dates = dates[date_idxs[0]:date_idxs[1] + 1]
         self.date = (0, self.dates[0])
+        #print(date_range)
 
     def advance_day(self):
         """Advances this Market's date by one day."""

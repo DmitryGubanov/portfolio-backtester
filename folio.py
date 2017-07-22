@@ -321,6 +321,8 @@ def main():
                     args.use_generated[i * 2], args.use_generated[i * 2 + 1], 0.00005, adjustment[0], adjustment[1])
                 my_market.inject_stock_data(
                     args.use_generated[i * 2], data[3][0], data[0])
+            #print(sorted(my_market.stocks['UPRO'].keys()))
+            #print(sorted(my_market.stocks['TMF'].keys()))
         for i in range(0, len(args.portfolio[6:]) // 3):
             my_trader.add_asset_of_interest(args.portfolio[i * 3 + 6])
             my_trader.set_desired_asset_ratio(args.portfolio[i * 3 + 6], float(args.portfolio[i * 3 + 7]))

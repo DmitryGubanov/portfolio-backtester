@@ -91,7 +91,9 @@ class Simulator(object):
 
         Specifically, adds all stocks to the Market and resets the
         Market's dates."""
-        self._market.add_stocks(self._trader.assets_of_interest)
+        for asset in self._trader.assets_of_interest:
+            if asset not in self._market.stocks.keys():
+                self._market.add_stocks(self._trader.assets_of_interest)
         self._market.set_default_dates()
 
     def _init_dates(self):
