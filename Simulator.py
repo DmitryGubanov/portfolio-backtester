@@ -93,6 +93,7 @@ class Simulator(object):
         while self._market.current_date() < self.dates_testing[1]:
             self._market.advance_day()
             self._trader.adjust_portfolio()
+            self._monitor.take_snapshot()
             self._record_stats()
 
     def _init_market(self):

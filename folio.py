@@ -346,6 +346,8 @@ def main():
         print('initial -> $' + currency(my_trader.starting_cash))
         print('final ---> $' + currency(my_trader.portfolio.value()))
 
+        (x, y) = my_monitor.get_data_series('portfolio_values')
+
         (dates, y) = my_sim.stats[Simulator.stat_keys[0]]
         x = [dt.strptime(d, "%Y-%m-%d").date() for d in dates]
 
@@ -359,6 +361,8 @@ def main():
         pyplot.plot(x, y)
         pyplot.grid(b=False, which='major', color='grey', linestyle='-')
 
+        (x, y) = my_monitor.get_data_series('asset_allocations')
+
         (dates, ratios) = my_sim.stats[Simulator.stat_keys[1]]
         x = [dt.strptime(d, "%Y-%m-%d").date() for d in dates]
         y = [[ratio[i] for ratio in ratios] for i in range(0, len(ratios[0]))]
@@ -369,11 +373,15 @@ def main():
         pyplot.grid(b=True, which='major', color='grey', linestyle='-')
         pyplot.legend(legend, loc='upper left')
 
+        (x, y) = my_monitor.get_data_series('annual_returns')
+
         (dates, values, y) = my_sim.stats[Simulator.stat_keys[2]]
         x = [dt.strptime(d, "%Y").date() for d in dates]
 
-        pyplot.subplot(413)
-        pyplot.bar(x, y, 200, color="blue")
+        ax = pyplot.subplot(413)
+        pyplot.bar(list(range(0, len(dates)))[1:], y[1:], 0.5, color="blue")
+        ax.set_xticks([x for x in range(0, len(dates))][1:])
+        ax.set_xticklabels(dates[1:])
         pyplot.grid(b=True, which='major', color='grey', linestyle='-')
 
         print('---')
@@ -407,6 +415,8 @@ def main():
               drawdown_end + ' recovered by ' + drawdown_recover)
 
         # plot contributions vs growth
+
+        (x, y) = my_monitor.get_data_series('contribution_vs_growth')
 
         (dates, values) = my_sim.stats[Simulator.stat_keys[3]]
         x = [date_obj(d).date() for d in dates]
