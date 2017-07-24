@@ -198,7 +198,7 @@ def generate_theoretical_data(ticker_a, ticker_b, step, pos_adj, neg_adj):
 ##############################################################################
 
 def main():
-    # TODO: HUGE: this whole main is sort of a disaster of hacked together statements that I wrote whenever I wanted to output something. Will replace this whole thing completely when I start v3, i.e. the interface part of this project
+    # TODO: HUGE: this whole main is sort of a disaster of hacked together statements that I wrote whenever I wanted to output something. Will replace this whole thing completely when I start the interface part of this project
 
     db = DataManager()
     args = parser.parse_args()
@@ -325,8 +325,6 @@ def main():
                     args.use_generated[i * 2], args.use_generated[i * 2 + 1], 0.00005, adjustment[0], adjustment[1])
                 my_market.inject_stock_data(
                     args.use_generated[i * 2], data[3][0], data[0])
-            #print(sorted(my_market.stocks['UPRO'].keys()))
-            #print(sorted(my_market.stocks['TMF'].keys()))
         for i in range(0, len(args.portfolio[6:]) // 3):
             my_trader.add_asset_of_interest(args.portfolio[i * 3 + 6])
             my_trader.set_desired_asset_ratio(args.portfolio[i * 3 + 6], float(args.portfolio[i * 3 + 7]))
@@ -342,98 +340,74 @@ def main():
         # run simulation
         my_sim.simulate()
 
-        # print start and finish
-        print('initial -> $' + currency(my_trader.starting_cash))
-        print('final ---> $' + currency(my_trader.portfolio.value()))
-
+        # show plots
         (x, y) = my_monitor.get_data_series('portfolio_values')
-
-        (dates, y) = my_sim.stats[Simulator.stat_keys[0]]
-        x = [dt.strptime(d, "%Y-%m-%d").date() for d in dates]
-
-        years = (x[-1] - x[0]).days / 365.25
-        print('CAGR ----> ' +
-              percent((my_trader.portfolio.value()
-                       / my_trader.starting_cash) ** (1 / years)
-                       - 1) + '%')
-
         pyplot.subplot(411)
         pyplot.plot(x, y)
         pyplot.grid(b=False, which='major', color='grey', linestyle='-')
 
         (x, y) = my_monitor.get_data_series('asset_allocations')
-
-        (dates, ratios) = my_sim.stats[Simulator.stat_keys[1]]
-        x = [dt.strptime(d, "%Y-%m-%d").date() for d in dates]
-        y = [[ratio[i] for ratio in ratios] for i in range(0, len(ratios[0]))]
-        legend = sorted(my_trader.assets_of_interest)
-
         pyplot.subplot(412)
         pyplot.stackplot(x, y, alpha=0.5)
         pyplot.grid(b=True, which='major', color='grey', linestyle='-')
-        pyplot.legend(legend, loc='upper left')
+        pyplot.legend(sorted(my_trader.assets_of_interest), loc='upper left')
 
         (x, y) = my_monitor.get_data_series('annual_returns')
-
-        (dates, values, y) = my_sim.stats[Simulator.stat_keys[2]]
-        x = [dt.strptime(d, "%Y").date() for d in dates]
-
         ax = pyplot.subplot(413)
-        pyplot.bar(list(range(0, len(dates)))[1:], y[1:], 0.5, color="blue")
-        ax.set_xticks([x for x in range(0, len(dates))][1:])
-        ax.set_xticklabels(dates[1:])
+        pyplot.bar(list(range(len(x))), y, 0.5, color='blue')
+        ax.set_xticks(list(range(len(x))))
+        ax.set_xticklabels(x)
         pyplot.grid(b=True, which='major', color='grey', linestyle='-')
 
-        print('---')
-        print('best year ----> ' + percent(max(y)) + '%')
-        print('worst year ---> ' + percent(min(y)) + '%')
-
-        # figure out max drawdown, need from, to, recovered by
-        (dates, values) = my_sim.stats[Simulator.stat_keys[0]]
-        last_high = values[0]
-        lowest_since = values[0]
-        drawdown = 0
-        potential_start = dates[0]
-        potential_end = dates[0]
-        for i in range(1, len(values)):
-            if values[i] > last_high:
-                last_high = values[i]
-                if drawdown > (lowest_since / last_high - 1):
-                    drawdown = lowest_since / last_high - 1
-                    drawdown_start = potential_start
-                    drawdown_end = potential_end
-                    drawdown_recover = dates[i]
-                lowest_since = values[i]
-                potential_start = dates[i]
-            else:
-                if values[i] < lowest_since:
-                    lowest_since = values[i]
-                    potential_end = dates[i]
-
-        print('max drawdown -> ' + percent(drawdown) + '%')
-        print(' from ' + drawdown_start + ' to ' +
-              drawdown_end + ' recovered by ' + drawdown_recover)
-
-        # plot contributions vs growth
-
         (x, y) = my_monitor.get_data_series('contribution_vs_growth')
-
-        (dates, values) = my_sim.stats[Simulator.stat_keys[3]]
-        x = [date_obj(d).date() for d in dates]
-        y = [[c / (c + g) for c, g in values], [g / (c + g)for c, g in values]]
-
         pyplot.subplot(414)
         pyplot.stackplot(x, y, alpha=0.5)
         pyplot.grid(b=True, which='major', color='grey', linestyle='-')
         pyplot.legend(['Contributions', 'Growth'], loc='upper left')
 
+        # print some stats
+        print('initial -> $' + currency(my_trader.starting_cash))
+        print('final ---> $' + currency(my_trader.portfolio.value()))
+        # years = (x[-1] - x[0]).days / 365.25
+        # print('CAGR ----> ' +
+        #       percent((my_trader.portfolio.value()
+        #                / my_trader.starting_cash) ** (1 / years)
+        #                - 1) + '%')
+        # print('---')
+        # print('best year ----> ' + percent(max(y)) + '%')
+        # print('worst year ---> ' + percent(min(y)) + '%')
+        # figure out max drawdown, need from, to, recovered by
+        # (dates, values) = my_sim.stats[Simulator.stat_keys[0]]
+        # last_high = values[0]
+        # lowest_since = values[0]
+        # drawdown = 0
+        # potential_start = dates[0]
+        # potential_end = dates[0]
+        # for i in range(1, len(values)):
+        #     if values[i] > last_high:
+        #         last_high = values[i]
+        #         if drawdown > (lowest_since / last_high - 1):
+        #             drawdown = lowest_since / last_high - 1
+        #             drawdown_start = potential_start
+        #             drawdown_end = potential_end
+        #             drawdown_recover = dates[i]
+        #         lowest_since = values[i]
+        #         potential_start = dates[i]
+        #     else:
+        #         if values[i] < lowest_since:
+        #             lowest_since = values[i]
+        #             potential_end = dates[i]
+        #
+        # print('max drawdown -> ' + percent(drawdown) + '%')
+        # print(' from ' + drawdown_start + ' to ' +
+        #       drawdown_end + ' recovered by ' + drawdown_recover)
         # figure out total contributions, ratio of contributions:value, CAGR ignoring contributions
-        print('---')
-        print('total contributions: $' + currency(my_portfolio.total_contributions))
-        print('total growth: $' + currency(my_portfolio.value() -
-                                           my_portfolio.total_contributions - my_trader.starting_cash))
-        print('adjusted CAGR: ' + percent(((my_portfolio.value() -
-                                            my_portfolio.total_contributions) / my_trader.starting_cash) ** (1 / years) - 1) + '%')
+        # print('---')
+        # print('total contributions: $' + currency(my_portfolio.total_contributions))
+        # print('total growth: $' + currency(my_portfolio.value() -
+        #                                    my_portfolio.total_contributions - my_trader.starting_cash))
+        # print('adjusted CAGR: ' + percent(((my_portfolio.value() -
+        #                                     my_portfolio.total_contributions) / my_trader.starting_cash) ** (1 / years) - 1) + '%')
 
         pyplot.show()
 

@@ -27,7 +27,6 @@ class Simulator(object):
 
     Todo:
         - [new feature] multiple portfolios/traders
-        - [code improvement, medium priority] move stats into own class
     """
 
     stat_keys = ['PORT_VAL', 'ASST_ALLOC', 'ANN_RET', 'CONTR_GRWTH']
@@ -38,7 +37,6 @@ class Simulator(object):
         self._market = None
         self._monitor = None
         self.dates_testing = (None, None)
-        self._init_stats()
 
     def add_trader(self, trader):
         """Sets the Trader for this Simulator.
@@ -94,7 +92,7 @@ class Simulator(object):
             self._market.advance_day()
             self._trader.adjust_portfolio()
             self._monitor.take_snapshot()
-            self._record_stats()
+            #self._record_stats()
 
     def _init_market(self):
         """Initializes/resets the Market to work with the current
@@ -131,48 +129,3 @@ class Simulator(object):
         """
         self._trader.use_market(self._market)
         self._trader.initialize_portfolio()
-
-    # TODO remove this eventually, since itll be in the Monitor class
-    def _init_stats(self):
-        """Initializes/resets the stats for this Simulator."""
-        self.stats = {}
-        for key in self.stat_keys:
-            self.stats[key] = [[], []]
-            if key == self.stat_keys[2]:
-                self.stats[key].append([])
-
-    def _record_stats(self):
-        """Takes a snapshot of the current Portfolio situation and
-        records it."""
-        # portfolio value history
-        self.stats[self.stat_keys[0]][0].append(self._market.current_date())
-        self.stats[self.stat_keys[0]][1].append(self._trader.portfolio.value())
-
-        # asset allocation
-        assets = sorted(self._trader.assets_of_interest)
-        self.stats[self.stat_keys[1]][0].append(self._market.current_date())
-        alloc = [(float(self._market.query_stock(asset))
-                  * int(self._trader.portfolio.holdings[asset])
-                  / self._trader.portfolio.value()) for asset in assets]
-
-        self.stats[self.stat_keys[1]][1].append(alloc)
-
-        # annual returns
-        if (self._market.new_period['y']
-            or len(self.stats[self.stat_keys[2]][2]) == 0):
-            self.stats[self.stat_keys[2]][0].append(
-                str(date_obj(self._market.current_date()).year - 1))
-            self.stats[self.stat_keys[2]][1].append(
-                self._trader.portfolio.value())
-            if len(self.stats[self.stat_keys[2]][2]) == 0:
-                self.stats[self.stat_keys[2]][2].append(0.0)
-            else:
-                self.stats[self.stat_keys[2]][2].append(
-                    self._trader.portfolio.value()
-                    / self.stats[self.stat_keys[2]][1][-2] - 1)
-
-        # contributions vs growth
-        self.stats[self.stat_keys[3]][0].append(self._market.current_date())
-        contribution = max(0, self._trader.portfolio.total_contributions)
-        growth = max(0, self._trader.portfolio.value() - contribution)
-        self.stats[self.stat_keys[3]][1].append((contribution, growth))

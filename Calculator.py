@@ -117,3 +117,30 @@ class Calculator(object):
             recovered by are date strings
         """
         return (0, '', '', '')
+
+    def get_cagr(self, value_data_series):
+        """Given a data series of dates and portfolio values,
+        calculates the Cumulative Annual Growth Rate.
+
+        Args:
+            value_data_series: A data series of dates and values
+
+        Returns:
+            A value representing the CAGR
+        """
+        return 1.0
+
+    def get_adjusted_cagr(self, value_data_series, total_contributions):
+        """Given a data series of dates and portfolio values, along
+        with the total contributions to said portfolio, calculates the
+        adjusted Cumulative Annual Growth Rate.
+
+        Args:
+            value_data_series: A data series of dates and values
+            total_contributions: A value representing the total
+                contributions
+
+        Returns:
+            A value representing the adjusted CAGR
+        """
+        return 1.0
