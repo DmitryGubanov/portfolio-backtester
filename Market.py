@@ -50,7 +50,7 @@ class Market(object):
             self.stocks[ticker.upper()] \
                 = self._db.build_price_lut(ticker.upper())
 
-    def inject_stock_data(self, ticker, dates, prices):
+    def inject_stock_data(self, ticker, dates, prices, price_lut=None):
         """Injects provided stock data into this market.
 
         Generally used for generated data, but can be used in any case
@@ -60,7 +60,14 @@ class Market(object):
             ticker: A ticker for which to inject data
             dates: An array of dates corresponding to the prices
             prices: An array of prices corresponding to the dates
+
+        Todo:
+            - pass in the price_lut directly... which I guess would
+            make this whole thing 1 line and pointless...?
         """
+        if price_lut:
+            self.stocks[ticker.upper()] = price_lut
+            return
         price_lut = {}
         for i in range(0, len(dates)):
             price_lut[dates[i]] = prices[i]

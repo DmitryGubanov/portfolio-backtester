@@ -87,7 +87,7 @@ class DataManager(object):
             return self._read_csv_file_rows_for(ticker)
         return []
 
-    def build_price_lut(self, ticker):
+    def build_price_lut(self, ticker, fill=True):
         """Builds a price look up table for a given ticker.
 
         Args:
@@ -98,7 +98,9 @@ class DataManager(object):
         """
         price_lookup = {}
         file_content = self._readlines_for(ticker)
-        # handle corner case with single-line files
+        # handle corner cases with empty or single-line files
+        if len(file_content) == 0:
+            return price_lookup
         if len(file_content) == 1:
             line_data = file_content[i].split(',')
             return {line_data[0]: float(line_data[4])}
@@ -113,7 +115,10 @@ class DataManager(object):
             while curr_date < next_date:
                 price_lookup[curr_date.strftime(DataManager.DATE_FORMAT)] \
                     = float(curr_line_data[4])
-                curr_date = curr_date + datetime.timedelta(1)
+                if fill:
+                    curr_date = curr_date + datetime.timedelta(1)
+                else:
+                    curr_date = next_date                    
         # handle last line in file separately
         price_lookup[next_date.strftime(
             DataManager.DATE_FORMAT)] = float(next_line_data[4])
