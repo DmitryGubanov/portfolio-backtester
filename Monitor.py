@@ -1,16 +1,31 @@
 from utils import date_obj
-
+from utils import days_between
 
 class Monitor(object):
 
-    """A Monitor for portfolios. Takes snapshots and records them for
-    statistics purposes.
+    """A Monitor for market and portfolio data in simulations, used by
+    taking snapshots of a market and portfolio at various stages in a
+    simulation.
 
-    Supported Statistics:
+    More specifically, as snapshots are taken - on a daily basis - the
+    data taken from those snapshots is recorded and interpretted to
+    provide a means for retrieving statistics (e.g. value history,
+    indicators, max drawdowns, etc.)
+
+    Supported portfolio statistics/series:
         - Per-day portfolio value history
         - Per-day asset allocation
         - Per-day contributions vs growth percent of total value
         - Per-year annual returns
+        - Max drawdown
+        - CAGR calculation
+        - Adjusted CAGR calculation
+
+    Supported indicators:
+        - Standard Moving Average (SMA) for a given period
+        - Exponential Moving Average (EMA) for a given period
+        - Moving Average Convergence/Divergence (MACD) for a given
+            set of periods
 
     Attributes:
         portfolio: A Portfolio instance to monitor
@@ -27,45 +42,71 @@ class Monitor(object):
         # main attributes
         self.portfolio = portfolio
         self.market = market
-        # records
-        self._daily_value_history = {}
-        self._annual_value_history = {}
-        self._all_assets = {}
-        self._asset_alloc_history = {}
-        self._contrib_vs_growth_history = {}
-        self._annual_returns = {}
-        # getter mapping
-        self.data_series_getter_for = {
+        # getter mappings
+        self._data_series_getter_for = {
             'portfolio_values': self._get_portfolio_value_data_series,
             'asset_allocations': self._get_asset_alloc_data_series,
             'annual_returns': self._get_annual_returns_data_series,
             'contribution_vs_growth': self._get_contrib_vs_growth_data_series
         }
+        self._statistic_getter_for = {
+            'max_drawdown': self._get_max_drawdown,
+            'cagr': self._get_cagr,
+            'adjusted_cagr': self._get_adjusted_cagr
+        }
 
     def init_stats(self):
         """Runs any necessary setup that needs to happen before stats
         can be recorded."""
-        # does nothing right now
+        # init internal values used in record keeping
+        self._dates = []
+        self._all_assets = {}
+        self._daily_value_history = {}
+        self._annual_value_history = {}
+        self._asset_alloc_history = {}
+        self._contrib_vs_growth_history = {}
+        self._annual_returns = {}
+        self._max_drawdown = {
+            'amount': 0, 'from': None, 'to': None, 'recovered_by': None
+        }
+        self._portfolio_max = 0
+        self._portfolio_min_since_max = 0
+        self._potential_drawdown_start = None
+        # init all assets to be monitored
+        self._all_assets = set(self.market.stocks.keys())
 
     def take_snapshot(self):
         """Records a snapshot of all supported stats for the Portfolio
         at the current date."""
+        self._dates.append(self.market.current_date())
         self._record_portfolio_value()
         self._record_asset_allocation()
         self._record_contribution_vs_growth()
-        if self.market.new_period['y']:
-            self._record_annual_return()
+        self._record_annual_return()
+        self._update_drawdown()
 
     def get_data_series(self, series):
         """Returns a set of data in a format meant for plotting.
 
         Args:
-            series: A value representing the data series to get
+            series: A string representing the data series to get
 
         Returns:
             A set of X and Y series to be used in a plot
         """
-        return self.data_series_getter_for[series]()
+        return self._data_series_getter_for[series]()
+
+    def get_statistic(self, statistic):
+        """Returns a statistic for the monitored Portfolio(s).
+
+        Args:
+            statistic: A string representing the statistic to get
+
+        Returns:
+            A value or set of values corresponding to the desired
+            statistic
+        """
+        return self._statistic_getter_for[statistic]()
 
     def _record_portfolio_value(self):
         """Internal method for recording the Portfolio value."""
@@ -81,7 +122,6 @@ class Monitor(object):
         Portfolio."""
         alloc = {}
         for asset, shares in self.portfolio.holdings.items():
-            self._all_assets[asset] = 0  # keep a record of all assets
             if self.portfolio.value() == 0:
                 alloc[asset] = 0
             else:
@@ -102,12 +142,35 @@ class Monitor(object):
     def _record_annual_return(self):
         """Internal method for recording the Portfolio's annual
         returns."""
+        if not self.market.new_period['y']:
+            return
         this_year = date_obj(self.market.current_date()).year
         if len(self._annual_value_history) > 1:
             self._annual_returns[str(this_year - 1)] = \
                 (self._annual_value_history[str(this_year)]
                  / self._annual_value_history[str(this_year - 1)]
                  - 1)
+
+    def _update_drawdown(self):
+        """Updates the maximum drawdown for this Monitor's
+        Portfolio."""
+        if self.portfolio.value() >= self._portfolio_max:
+            self._potential_drawdown_start = None
+            self._portfolio_max = self.portfolio.value()
+            self._portfolio_min_since_max = self._portfolio_max
+            if not self._max_drawdown['recovered_by']:
+                self._max_drawdown['recovered_by'] = self.market.current_date()
+            return
+        if self.portfolio.value() < self._portfolio_min_since_max:
+            if not self._potential_drawdown_start:
+                self._potential_drawdown_start = self.market.current_date()
+            self._portfolio_min_since_max = self.portfolio.value()
+            drawdown = self._portfolio_min_since_max / self._portfolio_max - 1
+            if drawdown < self._max_drawdown['amount']:
+                self._max_drawdown['amount'] = drawdown
+                self._max_drawdown['from'] = self._potential_drawdown_start
+                self._max_drawdown['to'] = self.market.current_date()
+                self._max_drawdown['recovered_by'] = None
 
     def _get_portfolio_value_data_series(self):
         """Internal function which returns a data series for a
@@ -136,9 +199,9 @@ class Monitor(object):
             A set of X and Y values meant to be plotted
         """
         dates = sorted(self._asset_alloc_history.keys())
-        allocs = [[] for i in range(len(self._all_assets.keys()))]
+        allocs = [[] for i in range(len(self._all_assets))]
         for date in dates:
-            for index, asset in enumerate(sorted(self._all_assets.keys())):
+            for index, asset in enumerate(sorted(self._all_assets)):
                 try:
                     alloc = self._asset_alloc_history[date][asset]
                 except KeyError:
@@ -179,3 +242,40 @@ class Monitor(object):
             ratios[0].append(self._contrib_vs_growth_history[date]['contrib'])
             ratios[1].append(self._contrib_vs_growth_history[date]['growth'])
         return ([date_obj(date) for date in dates], ratios)
+
+    def _get_max_drawdown(self):
+        """Internal function for returning the max drawdown.
+
+        Returns:
+            A dictionary in the form:
+                {'amount': <val>,
+                 'from': <date_str>,
+                 'to': <date_str>,
+                 'recovered by': <date_str>}
+        """
+        return self._max_drawdown.copy()
+
+    def _get_cagr(self):
+        """Internal function for calculating the Cumulative Annual
+        Growth Rate.
+
+        Returns:
+            A value representing the CAGR
+        """
+        start_val = self._daily_value_history[self._dates[0]]
+        end_val = self._daily_value_history[self._dates[-1]]
+        years = days_between(self._dates[0], self._dates[-1]) / 365.25
+        return (end_val / start_val) ** (1 / years) - 1
+
+    def _get_adjusted_cagr(self):
+        """Internal function for calculating the adjusted Cumulative
+        Annual Growth Rate.
+
+        Returns:
+            A value representing the adjusted CAGR
+        """
+        start_val = self._daily_value_history[self._dates[0]]
+        end_val = self._daily_value_history[self._dates[-1]]
+        years = days_between(self._dates[0], self._dates[-1]) / 365.25
+        contributions = self.portfolio.total_contributions
+        return ((end_val - contributions) / start_val) ** (1 / years) - 1

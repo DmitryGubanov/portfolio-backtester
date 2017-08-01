@@ -92,7 +92,6 @@ class Simulator(object):
             self._market.advance_day()
             self._trader.adjust_portfolio()
             self._monitor.take_snapshot()
-            #self._record_stats()
 
     def _init_market(self):
         """Initializes/resets the Market to work with the current

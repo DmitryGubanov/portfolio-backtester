@@ -7,9 +7,12 @@ from DataManager import DataManager
 class Calculator(object):
 
     """A Calculator specifically designed to do stock market
-    calculations.
+    calculations on data outside of simulations. Monitor should be used
+    for ongoing data requirements during simulations, as it handles
+    them more efficiently.
 
-    For example, indicator-related calculations are done here.
+    For example, indicator data series can be calculated here for
+    charting purposes.
 
     Currently supports:
         - Standard Moving Average for a given period
@@ -17,7 +20,6 @@ class Calculator(object):
         - Moving Average Convergence/Divergence for a given set of
             periods
         - generating theoretical ETF data
-        - calculating the max drawdown given a set of portfolio values
     """
 
     def __init__(self):
@@ -318,43 +320,3 @@ class Calculator(object):
                               '-'] for date in src_dates],
                             False)
         return (price_lut_gen_part, price_lut_gen_full)
-
-    def get_max_drawdown(self, values):
-        """Calculates the max drawdown for a given set of values.
-
-        Args:
-            values: A set of portfolio values
-
-        Returns:
-            A tuple in the form (drawdown, from, to, recovered by),
-            where the drawdown is a % value and from, to, and
-            recovered by are date strings
-        """
-        return (0, '', '', '')
-
-    def get_cagr(self, value_data_series):
-        """Given a data series of dates and portfolio values,
-        calculates the Cumulative Annual Growth Rate.
-
-        Args:
-            value_data_series: A data series of dates and values
-
-        Returns:
-            A value representing the CAGR
-        """
-        return 1.0
-
-    def get_adjusted_cagr(self, value_data_series, total_contributions):
-        """Given a data series of dates and portfolio values, along
-        with the total contributions to said portfolio, calculates the
-        adjusted Cumulative Annual Growth Rate.
-
-        Args:
-            value_data_series: A data series of dates and values
-            total_contributions: A value representing the total
-                contributions
-
-        Returns:
-            A value representing the adjusted CAGR
-        """
-        return 1.0

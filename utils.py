@@ -178,6 +178,17 @@ def date_str(date):
         return date
     return date.strftime(DATE_FORMAT)
 
+def days_between(date_a, date_b):
+    """Returns the number of days between two dates.
+
+    Args:
+        date_a: A date string or object representing the earlier date
+        date_b: A date string or object representing the later date
+
+    Returns:
+        A value representing a number of days
+    """
+    return (date_obj(date_b) - date_obj(date_a)).days
 
 def write_list_to_file(list, filename, overwrite):
     """Writes a list to a newline separated file.
