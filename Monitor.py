@@ -12,7 +12,7 @@ class Monitor(object):
     provide a means for retrieving statistics (e.g. value history,
     indicators, max drawdowns, etc.)
 
-    Supported portfolio statistics/series:
+    Supported portfolio statistics and data series:
         - Per-day portfolio value history
         - Per-day asset allocation
         - Per-day contributions vs growth percent of total value

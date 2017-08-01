@@ -24,9 +24,9 @@ x separate Downloader into Downloader and DataManager classes
 x DataManager feature: option to append to existing data instead of overwriting  
 x DataManager feature: fills in gaps (weekends/holidays) in LUT w/ previous last known value - makes code for querying simpler, especially between stocks in markets w/ diff. holidays  
 x rewrite some methods in Simulator to fit Market and Trader better  
-o Simulator should provide the Market to the Trader  
+x Simulator should provide the Market to the Trader  
 o reimplement withdrawals  
-o Stats needs to be reworked completely  
+x Stats needs to be reworked completely  
 
 Long-term:
 
@@ -92,4 +92,6 @@ v2.4, validation, cleanup, and fixes
 - separated all classes into own files and put all util classes/functions into own file
 - implement Trader class for trading logic
 - implement DataManager class for managing data on disk
+- implement Monitor class for statistics and record keeping during simulations
+- implement Calculator class for stand-alone calculations outside simulations
 - rewrote all files to follow PEP-8 and Google docstrings coding style
