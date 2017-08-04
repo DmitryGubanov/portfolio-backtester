@@ -4,6 +4,8 @@ from datetime import datetime as dt
 from utils import date_str
 from utils import date_obj
 
+from Calculator import Calculator
+
 
 class Simulator(object):
 
@@ -29,10 +31,9 @@ class Simulator(object):
         - [new feature] multiple portfolios/traders
     """
 
-    stat_keys = ['PORT_VAL', 'ASST_ALLOC', 'ANN_RET', 'CONTR_GRWTH']
-
     def __init__(self):
         """Initializes an empty simulator."""
+        self._calc = Calculator()
         self._trader = None
         self._market = None
         self._monitor = None
@@ -98,11 +99,28 @@ class Simulator(object):
         Simulator setup.
 
         Specifically, adds all stocks to the Market and resets the
-        Market's dates."""
+        Market's dates. Then, adds all relevant indicators."""
         for asset in self._trader.assets_of_interest:
             if asset not in self._market.stocks.keys():
-                self._market.add_stocks(self._trader.assets_of_interest)
+                self._market.add_stocks([asset])
         self._market.set_default_dates()
+        # TODO temporary list of indicators until made more dynamic
+        indicators = [
+            'SMA_20',
+            'SMA_50',
+            'SMA_200',
+            'EMA_20',
+            'EMA_50',
+            'EMA_200',
+            'MACD_12-26-9'
+        ]
+        for asset in self._trader.assets_of_interest:
+            for indicator in indicators:
+                self._market.add_indicator(
+                    asset,
+                    indicator,
+                    self._calc.get_indicator(indicator,
+                                             self._market.stocks[asset]))
 
     def _init_dates(self):
         """Initializes/resets the testing dates for this Simulator.
@@ -110,7 +128,7 @@ class Simulator(object):
         Specifically, aligns the Simulator's dates with the Market's
         dates."""
         if (not self.dates_testing[0]
-            or self.dates_testing[0] < self._market.dates[0]):
+                or self.dates_testing[0] < self._market.dates[0]):
             self.dates_testing = (self._market.dates[0],
                                   self.dates_testing[1])
         else:

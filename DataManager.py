@@ -87,11 +87,15 @@ class DataManager(object):
             return self._read_csv_file_rows_for(ticker)
         return []
 
-    def build_price_lut(self, ticker, fill=True):
+    def build_price_lut(self, ticker, fill=False):
         """Builds a price look up table for a given ticker.
 
         Args:
             ticker: A string representing the ticker of a stock
+            fill: Whether or not to fill holidays/weekends with
+                previous data
+                NOTE: experimental feature which made some slightly
+                unexpected numbers come up - turned off for now
 
         Returns:
             A dictionary with dates as keys and prices as values
@@ -118,7 +122,7 @@ class DataManager(object):
                 if fill:
                     curr_date = curr_date + datetime.timedelta(1)
                 else:
-                    curr_date = next_date                    
+                    curr_date = next_date
         # handle last line in file separately
         price_lookup[next_date.strftime(
             DataManager.DATE_FORMAT)] = float(next_line_data[4])

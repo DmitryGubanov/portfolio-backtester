@@ -26,63 +26,7 @@ from utils import *
 ##############################################################################
 
 def main():
-    # TODO: HUGE: this whole main is sort of a disaster of hacked together statements that I wrote whenever I wanted to output something. Will replace this whole thing completely when I start the interface part of this project
     args = parser.parse_args()
-
-    # NOTE testing SMA calcs
-    # upro_lut = db.build_price_lut('UPRO')
-    # price_series = [upro_lut[x] for x in sorted(upro_lut.keys())]
-    # ema1_lut = calc.get_macd([12, 26, 9], upro_lut)
-    #
-    # ema1 = [ema1_lut[x] for x in sorted(ema1_lut.keys())]
-    # ema2 = get_macd(price_series, [12, 26, 9])
-    # ema3 = calc.get_macd_series([12, 26, 9], upro_lut)
-    #
-    # print('length: {} vs {}'.format(len(ema1), len(ema2)))
-    # for i in range(len(ema1)):
-    #     print('sma: {} vs {} vs {}, with URO at {}'.format(ema1[i], [ema2[0][i], ema2[1][i], ema2[2][i]], [ema3[0][i], ema3[1][i], ema3[2][i]], price_series[i]))
-
-    if args.download != None:
-        failed = download_stocks_data(args.download, True)
-        if len(failed) == len(args.download):
-            print("failed to download provided stock(s). exiting.")
-        if len(failed) > 0:
-            failed_stocks = ', '.join(failed)
-            print("failed to download:\n" + failed_stocks)
-
-    if args.download_using != None:
-        failed = download_stocks_data(
-            [line.strip() for line in readlines(args.download_using[0])], False)
-        if len(failed) == len(args.download):
-            print("failed to download provided stock(s). exiting.")
-        if len(failed) > 0:
-            failed_stocks = ', '.join(failed)
-            print("failed to download:\n" + failed_stocks)
-
-    if args.download_using_csv != None:
-        failed = download_stocks_data(list_from_csv(
-            args.download_using_csv[0], 0, ',', ['"']), False)
-        if len(failed) == len(args.download):
-            print("failed to download provided stock(s). exiting.")
-        if len(failed) > 0:
-            failed_stocks = ', '.join(failed)
-            print("failed to download:\n" + failed_stocks)
-
-    if args.best_stocks != None:
-        stock_list = clean_stock_list(list_from_csv(
-            args.best_stocks[2], 0, ',', ['"']), 1, 5)
-        i = 0
-        while i < len(stock_list):
-            if not has_file(stock_list[i]):
-                del stock_list[i]
-            else:
-                i += 1
-        best_data = get_best(int(args.best_stocks[0]),
-                             int(args.best_stocks[1][0:-1]),
-                             args.best_stocks[1][-1],
-                             stock_list)
-        for tuple in best_data:
-            print(tuple[0] + ":\t" + percent(tuple[1]) + '%')
 
     if args.generate != None:
         (part, full) = calc.generate_theoretical_data(args.generate[0],
@@ -111,37 +55,6 @@ def main():
 
         pyplot.show()
 
-    # if args.draw_chart != None:
-    #     stock_data = read_csv_file_columns(filename(args.draw_chart[0]))
-    #     if len(stock_data) == 0:
-    #         print("no data. exiting.")
-    #         exit()
-    #     x = 0
-    #     dates = []
-    #     for i in range(0, len(stock_data[0])):
-    #         dates.append(i)
-    #     plots = 1
-    #     if args.macd != None:
-    #         plots = 2
-    #     pyplot.subplot(plots * 100 + 11)
-    #     pyplot.plot(dates[x:], stock_data[6][x:])
-    #     if args.sma != None:
-    #         for period in args.sma:
-    #             sma_data = get_sma(stock_data[6], period)
-    #             pyplot.plot(dates[x:], sma_data[x:], label='SMA ' + period)
-    #     if args.ema != None:
-    #         for period in args.ema:
-    #             ema_data = get_ema(stock_data[6], period)
-    #             pyplot.plot(dates[x:], ema_data[x:], label='EMA ' + period)
-    #     pyplot.legend(loc='upper left')
-    #     if args.macd != None:
-    #         macd_data = get_macd(stock_data[6], args.macd)
-    #         pyplot.subplot(212)
-    #         pyplot.plot(dates[x:], macd_data[0][x:])
-    #         pyplot.plot(dates[x:], macd_data[1][x:])
-    #         pyplot.bar(dates[x:], macd_data[2][x:])
-    #     pyplot.show()
-
     if args.portfolio != None:
         # init main objects
         my_market = Market()
@@ -160,10 +73,10 @@ def main():
         # parse args
         if args.use_generated != None:
             for i in range(0, len(args.use_generated) // 2):
-                (data, _) = calc.generate_theoretical_data(
-                    args.use_generated[i * 2], args.use_generated[i * 2 + 1])
-                my_market.inject_stock_data(
-                    args.use_generated[i * 2], None, None, data)
+                ticker_a = args.use_generated[i * 2]
+                ticker_b = args.use_generated[i * 2 + 1]
+                (data, _) = calc.generate_theoretical_data(ticker_a, ticker_b)
+                my_market.inject_stock_data(ticker_a, None, None, data)
         for i in range(0, len(args.portfolio[6:]) // 3):
             my_trader.add_asset_of_interest(args.portfolio[i * 3 + 6])
             my_trader.set_desired_asset_ratio(args.portfolio[i * 3 + 6], float(args.portfolio[i * 3 + 7]))
@@ -233,14 +146,6 @@ def main():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Stock program (WIP).')
-    parser.add_argument('--download', nargs='+')
-    parser.add_argument('--download-using', nargs=1)
-    parser.add_argument('--download-using-csv', nargs=1)
-    parser.add_argument('--draw-chart', nargs=1)
-    parser.add_argument('--sma', nargs='+')
-    parser.add_argument('--ema', nargs='+')
-    parser.add_argument('--macd', nargs=3)
-    parser.add_argument('--best-stocks', nargs=3)
     parser.add_argument('--generate', nargs=2)
     parser.add_argument('--portfolio', nargs='+')
     parser.add_argument('--use-generated', nargs='+')

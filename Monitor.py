@@ -54,6 +54,12 @@ class Monitor(object):
             'cagr': self._get_cagr,
             'adjusted_cagr': self._get_adjusted_cagr
         }
+        # TODO remove?
+        # self._indicator_getter_for = {
+        #     'sma': self._get_sma,
+        #     'ema': self._get_ema,
+        #     'macd': self._get_macd
+        # }
 
     def init_stats(self):
         """Runs any necessary setup that needs to happen before stats
@@ -107,6 +113,21 @@ class Monitor(object):
             statistic
         """
         return self._statistic_getter_for[statistic]()
+
+    def get_indicator(self, indicator, ticker):
+        """Returns an indicator value or values for the monitored Portfolio(s).
+
+        Args:
+            indicator: A string representing the statistic to get
+            ticker: A string representing the ticker for a stock
+
+        Returns:
+            A value or set of values corresponding to the desired
+            statistic
+        """
+        return self.market.query_stock_indicator(ticker, indicator)
+        # TODO remove?
+        #return self._statistic_getter_for[statistic](ticker, period)
 
     def _record_portfolio_value(self):
         """Internal method for recording the Portfolio value."""
@@ -279,3 +300,46 @@ class Monitor(object):
         years = days_between(self._dates[0], self._dates[-1]) / 365.25
         contributions = self.portfolio.total_contributions
         return ((end_val - contributions) / start_val) ** (1 / years) - 1
+
+    # TODO remove?
+    # def _get_sma(self, ticker, period):
+    #     """Returns the SMA value for a given period at the current date
+    #     in this Monitor, i.e. the last date for which there was a
+    #     snapshot taken.
+    #
+    #     Args:
+    #         period: A value representing the period for the SMA
+    #
+    #     Returns:
+    #         A value representing an SMA
+    #     """
+    #     prices = self.market.query_stock(ticker, period)
+    #     return sum(prices) / len(prices)
+    #
+    # def _get_ema(self, ticker, period):
+    #     """Calculates and returns the EMA value for a given period at
+    #     the current date in this Monitor, i.e. the last date for which
+    #     there was a snapshot taken.
+    #
+    #     Args:
+    #         period: A value representing the period for the EMA
+    #
+    #     Returns:
+    #         A value representing an EMA
+    #     """
+    #     return
+    #
+    # def _get_macd(self, ticker, periods):
+    #     """Calculates and returns the MACD values for the given periods
+    #     at the current date in this Monitor, i.e. the last date for
+    #     which there was a snapshot taken.
+    #
+    #     Args:
+    #         periods: A tuple of value representing the periods for the
+    #         MACD
+    #
+    #     Returns:
+    #         A tuple of values representing the MACD, signal, and
+    #         histogram
+    #     """
+    #     return

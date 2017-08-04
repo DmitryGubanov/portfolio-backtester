@@ -6,39 +6,45 @@ In short, it's a portfolio backtester; i.e. given a portfolio, it'll tell you ho
 
 Main features:
 - download stock data
-- display data on graph
 - calculate indicators: sma, ema, macd
 - generate new data for one stock based on existing data of other stock (intended for observing ETFs based on an index prior to an ETF's inception, e.g. UPRO is based on S&P, but UPRO didn't exist before 2009, so you can use the S&P data to generate UPRO to see its predicted behaviour before 2009)
 - create basic portfolios of assets, specify rebalancing, withdrawals and simulate its past performance on a per-day basis
+- display data on graphs
+
+# Sample commands
+
+Requires python 3.5, matplotlib, argparse, urllib
+
+Commands are a temporary way to use the program until an interface is created
+
+```
+python3.5 Downloader.py --download AAPL AMD
+python3.5 folio.py --portfolio 10000 0 m q 1995-01-01 2017-08-01 AAPL 0.5 long AMD 0.5 long
+```
+
+This will download all AAPL and AMD stock data, then create a starting portfolio of $10,000 ('10000') and invest 50% of your portfolio into AAPL ('AAPL 0.5 long') and another 50% into AMD ('AMD 0.5 long'). As the days go on in the simulation, $0 will be contributed monthly ('0 m'), and the 50%/50% ratios will be rebalanced quarterly ('q')
+
+Dates are needed as placeholders in the argument list, but don't do anything. Same goes for 'long' keywords after the stock ticker(s). I don't plan to use the command line indefinitely and it's only there to test the functionality up until an interface is made, so making the command line "pretty" is very low priority at the moment.
+
 
 # Current work in progress
 
-Short-term:
+Short-term (v3.0, trades based on indicators & dynamic portfolios):
 
-x separate into different files  
-x create Downloader class to handle downloading data and putting it into consistent format  
-x implement new way to get data (typical yahoo way was shut down) (chose to use google)  
-x create Trader class to handle trading logic (placing orders, etc.)  
-x compare information against known/real data to verify accuracy  
-x separate Downloader into Downloader and DataManager classes  
-x DataManager feature: option to append to existing data instead of overwriting  
-x DataManager feature: fills in gaps (weekends/holidays) in LUT w/ previous last known value - makes code for querying simpler, especially between stocks in markets w/ diff. holidays  
-x rewrite some methods in Simulator to fit Market and Trader better  
-x Simulator should provide the Market to the Trader  
-o reimplement withdrawals  
-x Stats needs to be reworked completely  
+
 
 Long-term:
 
 o interface (e.g. web)  
 o trades based on indicators  
-o dynamic portfolio ratios depending on conditions
-o benchmarks
+o dynamic portfolio ratios depending on conditions  
+o benchmarks  
+o reimplement withdrawals   
 
 # Version features/change
 
-Current version: 2.3  
-WIP: 2.4
+Current version: 2.4  
+WIP: 3.0
 
 Version 1
 

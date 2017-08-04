@@ -6,10 +6,8 @@ from DataManager import DataManager
 
 class Calculator(object):
 
-    """A Calculator specifically designed to do stock market
-    calculations on data outside of simulations. Monitor should be used
-    for ongoing data requirements during simulations, as it handles
-    them more efficiently.
+    """A Calculator specifically designed to do stock market related
+    calculations on stock data.
 
     For example, indicator data series can be calculated here for
     charting purposes.
@@ -24,6 +22,31 @@ class Calculator(object):
 
     def __init__(self):
         """Initializes a Calculator."""
+
+    def get_indicator(self, indicator_code, price_lut):
+        """desc.
+
+        Args:
+            indicator_code: A string coding the indicator and period
+            price_lut: A price lookup table for the data on which the
+                indicator should be applied
+
+        Returns:
+            A dictionary mapping dates to indicator values
+        """
+        # decode
+        [indicator, period_code] = indicator_code.split('_')
+        period = period_code.split('-')
+        if len(period) == 1:
+            period = period[0]
+        # create mapping to methods
+        mapping = {
+            'SMA': self.get_sma,
+            'EMA': self.get_ema,
+            'MACD': self.get_macd
+        }
+        # call correct method
+        return mapping[indicator](period, price_lut)
 
     def get_sma(self, period, price_lut):
         """Calculates the Standard Moving Average for a given period
