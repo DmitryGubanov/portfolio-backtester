@@ -23,13 +23,17 @@ class Calculator(object):
     def __init__(self):
         """Initializes a Calculator."""
 
-    def get_indicator(self, indicator_code, price_lut):
-        """desc.
+    def get_indicator(self, indicator_code, price_lut, series=False):
+        """A mapping function for indicator functions. Primarily used
+        for cases where indicators are dynamic and hardcoding functions
+        is impractical.
 
         Args:
             indicator_code: A string coding the indicator and period
             price_lut: A price lookup table for the data on which the
                 indicator should be applied
+            series: A value for whether or not to map to a series
+                indicator function
 
         Returns:
             A dictionary mapping dates to indicator values
@@ -40,11 +44,18 @@ class Calculator(object):
         if len(period) == 1:
             period = period[0]
         # create mapping to methods
-        mapping = {
-            'SMA': self.get_sma,
-            'EMA': self.get_ema,
-            'MACD': self.get_macd
-        }
+        if series:
+            mapping = {
+                'SMA': self.get_sma_series,
+                'EMA': self.get_ema_series,
+                'MACD': self.get_macd_series
+            }
+        else:
+            mapping = {
+                'SMA': self.get_sma,
+                'EMA': self.get_ema,
+                'MACD': self.get_macd
+            }
         # call correct method
         return mapping[indicator](period, price_lut)
 

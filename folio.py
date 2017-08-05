@@ -25,10 +25,55 @@ from utils import *
 # MAIN
 ##############################################################################
 
+
 def main():
     args = parser.parse_args()
 
-    if args.generate != None:
+    if args.draw:
+        # parse arguments and collect data
+        # price history
+        if args.use_generated:
+            gen = args.use_generated[0]
+            src = args.use_generated[1]
+            (data, _) = calc.generate_theoretical_data(gen, src)
+        else:
+            data = db.build_price_lut(args.draw[0])
+        dates = [date_obj(date) for date in sorted(data.keys())]
+        prices = [data[date_str(date)] for date in dates]
+        # indicators and plot counts
+        if not args.indicators:
+            args.indicators = []
+        plots = 1
+        indicators = {}
+        for indicator_code in args.indicators:
+            (indicator, _) = indicator_code.split('_')
+            if indicator == 'MACD':
+                plots = 2
+            indicators[indicator_code] = calc.get_indicator(indicator_code,
+                                                            data, True)
+
+        # plot main price data
+        pyplot.subplot(plots * 100 + 11)
+        pyplot.plot(dates, prices, label='{} price'.format(args.draw[0]))
+        pyplot.legend(loc='upper left')
+
+        # plot indicators
+        for (indicator_code, series) in indicators.items():
+            (indicator, period_code) = indicator_code.split('_')
+            if indicator == 'MACD':
+                pyplot.subplot(plots * 100 + 12)
+                pyplot.plot(dates, series[0], label=indicator_code)
+                pyplot.plot(dates, series[1],
+                            label='Signal_{}'.format(period_code))
+                pyplot.legend(loc='upper left')
+            else:
+                pyplot.subplot(plots * 100 + 11)
+                pyplot.plot(dates, series, label=indicator_code)
+                pyplot.legend(loc='upper left')
+
+        pyplot.show()
+
+    if args.generate:
         (part, full) = calc.generate_theoretical_data(args.generate[0],
                                                       args.generate[1])
         tgt_lut = db.build_price_lut(args.generate[0])
@@ -55,7 +100,7 @@ def main():
 
         pyplot.show()
 
-    if args.portfolio != None:
+    if args.portfolio:
         # init main objects
         my_market = Market()
         my_trader = Trader()
@@ -71,7 +116,7 @@ def main():
         my_sim.use_monitor(my_monitor)
 
         # parse args
-        if args.use_generated != None:
+        if args.use_generated:
             for i in range(0, len(args.use_generated) // 2):
                 ticker_a = args.use_generated[i * 2]
                 ticker_b = args.use_generated[i * 2 + 1]
@@ -79,9 +124,11 @@ def main():
                 my_market.inject_stock_data(ticker_a, None, None, data)
         for i in range(0, len(args.portfolio[6:]) // 3):
             my_trader.add_asset_of_interest(args.portfolio[i * 3 + 6])
-            my_trader.set_desired_asset_ratio(args.portfolio[i * 3 + 6], float(args.portfolio[i * 3 + 7]))
+            my_trader.set_desired_asset_ratio(args.portfolio[i * 3 + 6],
+                                              float(args.portfolio[i * 3 + 7]))
         if args.portfolio[2] != "None" and args.portfolio[1] != "None":
-            my_trader.set_strategy('contributions', [args.portfolio[2], args.portfolio[1]])
+            my_trader.set_strategy('contributions',
+                                   [args.portfolio[2], args.portfolio[1]])
         if args.portfolio[3] != "None":
             my_trader.set_strategy('rebalancing', [args.portfolio[3]])
         if args.portfolio[4]:
@@ -149,6 +196,8 @@ if __name__ == "__main__":
     parser.add_argument('--generate', nargs=2)
     parser.add_argument('--portfolio', nargs='+')
     parser.add_argument('--use-generated', nargs='+')
+    parser.add_argument('--draw', nargs=1)
+    parser.add_argument('--indicators', nargs='+')
 
     db = DataManager()
     calc = Calculator()
