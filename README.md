@@ -29,70 +29,78 @@ Dates are needed as placeholders in the argument list, but don't do anything. Sa
 
 # Current work in progress
 
-Short-term (v3.0, trades based on indicators & dynamic portfolios):
+### Short-term (v3.0, trades based on indicators):
+
+o create shell for Brain class, a class dedicated to making decisions based on strategies  
+o hardcode a basic strategy into brain (assesses market daily, provides ratios to Trader)  
+o probably need to refactor Trader by moving rebalancing into Brain  
+o program Brain to handle strategies based on different indicators and periods  
+o implement a way to read strategies from file in DataManager
 
 
-
-Long-term:
+### Long-term:
 
 o interface (e.g. web)  
-o trades based on indicators  
 o dynamic portfolio ratios depending on conditions  
 o benchmarks  
 o reimplement withdrawals   
 
-# Version features/change
+# Version features/changelog
 
 Current version: 2.4  
 WIP: 3.0
 
-Version 1
+## Version 1
 
-v1.0, basic data
+> Goals: get data, store data, project data, show data
+
+#### v1.0, basic data
 - download stock data given ticker
 - download stock(s) data from list of stocks in file
 - read CSV file with stock data and convert to arrays
 - graph stock data using pyplot
 
-v1.1, basic indicators
+#### v1.1, basic indicators
 - implement some indicators (sma, ema, macd) with custom date ranges
 - display indicators using pyplot
 
-v1.2, playing around with data
+#### v1.2, playing around with data
 - calculate growth of all stocks in a file
 - specify time period for analysis
 - implement some utils to make analysis consistent (e.g. date math, nearest date before/after given date)
 
-v1.3, ETF data generation
+#### v1.3, ETF data generation
 - given two tickers, create relationship between the two and extrapolate data for one based on data in other (e.g. UPRO is 3x the S&P500, read S&P before UPRO's inception to calculate what UPRO would have been had it existed before its inception)
 - tweak data generation to improve accuracy
 - test generation by generating existing data and comparing
 
-v1.4, cleanup
+#### v1.4, cleanup
 - move repeated code into functions
 - rewrite some functions to be more legible and have clearer logic flow
 
 
-Version 2
+## Version 2
 
-v2.0, basic portfolio
+> Goals: simulate a basic portfolio, create framework-esque platform
+
+#### v2.0, basic portfolio
 - create portfolio class, which has cash, holdings, and assets
 - create portfolio behaviour (buy, sell, short, cover)
 
-v2.1, basic market
+#### v2.1, basic market
 - create market class, which has a date and stocks
 - create market behaviour (query stocks on date, advance date, add stocks, inject data)
 
-v2.2, basic simulation
+#### v2.2, basic simulation
 - create simulator class, which has portfolio, market, and start/end date(s)
 - create simulator simulation behaviour
 
-v2.3, simulation features
+#### v2.3, simulation features
 - add contributions and rebalancing of portfolio holdings to simulator
 - add optional commission costs
 - add portfolio statistics for graphing purposes (portfolio value, asset allocation, annual return, contribution vs growth)
 
-v2.4, validation, cleanup, and fixes
+#### v2.4, validation, cleanup, and fixes
 - separate download logic into own Downloader class
 - implement downloading from google, since yahoo stopped their free/easy to use service
 - separated all classes into own files and put all util classes/functions into own file
@@ -101,3 +109,10 @@ v2.4, validation, cleanup, and fixes
 - implement Monitor class for statistics and record keeping during simulations
 - implement Calculator class for stand-alone calculations outside simulations
 - rewrote all files to follow PEP-8 and Google docstrings coding style
+
+
+## Version 3
+
+> Goals: more intricate user programmed strategies
+
+#### v3.0, basic indicator related strategies
