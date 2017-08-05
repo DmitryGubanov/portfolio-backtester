@@ -29,14 +29,18 @@ Dates are needed as placeholders in the argument list, but don't do anything. Sa
 
 # Current work in progress
 
-Short-term (v3.0, trades based on indicators & dynamic portfolios):
+Short-term (v3.0, trades based on indicators):
 
+o create shell for Brain class, a class dedicated to making decisions based on strategies  
+o hardcode a basic strategy into brain (assesses market daily, provides ratios to Trader)  
+o probably need to refactor Trader by moving rebalancing into Brain  
+o program Brain to handle strategies based on different indicators and periods  
+o implement a way to read strategies from file in DataManager
 
 
 Long-term:
 
 o interface (e.g. web)  
-o trades based on indicators  
 o dynamic portfolio ratios depending on conditions  
 o benchmarks  
 o reimplement withdrawals   
@@ -47,6 +51,8 @@ Current version: 2.4
 WIP: 3.0
 
 Version 1
+
+Goals: get data, store data, project data, show data
 
 v1.0, basic data
 - download stock data given ticker
@@ -75,6 +81,8 @@ v1.4, cleanup
 
 Version 2
 
+Goals: simulate a basic portfolio, create framework-esque platform
+
 v2.0, basic portfolio
 - create portfolio class, which has cash, holdings, and assets
 - create portfolio behaviour (buy, sell, short, cover)
@@ -101,3 +109,10 @@ v2.4, validation, cleanup, and fixes
 - implement Monitor class for statistics and record keeping during simulations
 - implement Calculator class for stand-alone calculations outside simulations
 - rewrote all files to follow PEP-8 and Google docstrings coding style
+
+
+Version 3
+
+Goals: more intricate user programmed strategies
+
+v3.0, basic indicator related strategies
