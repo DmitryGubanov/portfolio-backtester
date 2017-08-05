@@ -45,7 +45,7 @@ o dynamic portfolio ratios depending on conditions
 o benchmarks  
 o reimplement withdrawals   
 
-# Version features/change
+# Version features/changelog
 
 Current version: 2.4  
 WIP: 3.0
@@ -54,7 +54,7 @@ WIP: 3.0
 
 > Goals: get data, store data, project data, show data
 
-### v1.0, basic data
+#### v1.0, basic data
 - download stock data given ticker
 - download stock(s) data from list of stocks in file
 - read CSV file with stock data and convert to arrays
@@ -83,24 +83,24 @@ WIP: 3.0
 
 > Goals: simulate a basic portfolio, create framework-esque platform
 
-##### v2.0, basic portfolio
+#### v2.0, basic portfolio
 - create portfolio class, which has cash, holdings, and assets
 - create portfolio behaviour (buy, sell, short, cover)
 
-##### v2.1, basic market
+#### v2.1, basic market
 - create market class, which has a date and stocks
 - create market behaviour (query stocks on date, advance date, add stocks, inject data)
 
-##### v2.2, basic simulation
+#### v2.2, basic simulation
 - create simulator class, which has portfolio, market, and start/end date(s)
 - create simulator simulation behaviour
 
-##### v2.3, simulation features
+#### v2.3, simulation features
 - add contributions and rebalancing of portfolio holdings to simulator
 - add optional commission costs
 - add portfolio statistics for graphing purposes (portfolio value, asset allocation, annual return, contribution vs growth)
 
-##### v2.4, validation, cleanup, and fixes
+#### v2.4, validation, cleanup, and fixes
 - separate download logic into own Downloader class
 - implement downloading from google, since yahoo stopped their free/easy to use service
 - separated all classes into own files and put all util classes/functions into own file
@@ -115,4 +115,4 @@ WIP: 3.0
 
 > Goals: more intricate user programmed strategies
 
-###### v3.0, basic indicator related strategies
+#### v3.0, basic indicator related strategies
