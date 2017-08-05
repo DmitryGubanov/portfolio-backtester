@@ -104,13 +104,15 @@ class Downloader(object):
         """
         return []
 
-    def _google_url(self, ticker, date):
+    def _google_url(self, ticker, date, market=None):
         """Simple URL generating function for the Google finance API.
 
         Args:
             ticker: A string representing the ticker to download
             date: A string in 'YYYY-MM-DD' format representing the end
                 date for the data
+            market: An optional value to specify the market for the
+                ticker
         """
         # special cases 'hack' to handle weirdness of Google API
         special_cases = {
@@ -118,10 +120,13 @@ class Downloader(object):
         }
         dt = datetime.datetime.strptime(date, '%Y-%m-%d')
         base = 'http://www.google.com/finance/historical'
-        try:
-            query = '{}%3A{}'.format(special_cases[ticker.upper()], ticker)
-        except KeyError:
-            query = '{}'.format(ticker)
+        if market:
+            query = '{}%3A{}'.format(market, ticker)
+        else:
+            try:
+                query = '{}%3A{}'.format(special_cases[ticker.upper()], ticker)
+            except KeyError:
+                query = '{}'.format(ticker)
         enddate = '{}%20{},%20{}'.format(
             dt.strftime('%b'), dt.strftime('%d'), dt.strftime('%Y'))
         output = 'csv'
@@ -144,8 +149,12 @@ class Downloader(object):
             - error handling for urllib request
         """
         data = []
-        csv = urllib.request.urlopen(
-            self._google_url(ticker, date)).readlines()
+        try:
+            csv = urllib.request.urlopen(
+                self._google_url(ticker, date)).readlines()
+        except urllib.error.HTTPError:
+            csv = urllib.request.urlopen(
+                self._google_url(ticker, date, 'NYSE')).readlines()
         for line in csv[1:]:
             data = [line.decode("ASCII").strip().split(',')] + data
             data[0][0] = datetime.datetime.strptime(
