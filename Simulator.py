@@ -100,7 +100,7 @@ class Simulator(object):
 
         Specifically, adds all stocks to the Market and resets the
         Market's dates. Then, adds all relevant indicators."""
-        for asset in self._trader.assets_of_interest:
+        for asset in self._trader.get_assets_of_interest():
             if asset not in self._market.stocks.keys():
                 self._market.add_stocks([asset])
         self._market.set_default_dates()
@@ -108,13 +108,16 @@ class Simulator(object):
         indicators = [
             'SMA_20',
             'SMA_50',
+            'SMA_100',
+            'SMA_150',
             'SMA_200',
+            'SMA_365',
             'EMA_20',
             'EMA_50',
             'EMA_200',
             'MACD_12-26-9'
         ]
-        for asset in self._trader.assets_of_interest:
+        for asset in self._trader.get_assets_of_interest():
             for indicator in indicators:
                 self._market.add_indicator(
                     asset,

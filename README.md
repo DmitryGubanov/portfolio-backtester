@@ -8,7 +8,7 @@ Main features:
 - download stock data
 - calculate indicators: sma, ema, macd
 - generate new data for one stock based on existing data of other stock (intended for observing ETFs based on an index prior to an ETF's inception, e.g. UPRO is based on S&P, but UPRO didn't exist before 2009, so you can use the S&P data to generate UPRO to see its predicted behaviour before 2009)
-- create basic portfolios of assets, specify rebalancing, withdrawals and simulate its past performance on a per-day basis
+- create basic portfolios of assets, specify rebalancing, contributions and simulate its past performance on a per-day basis
 - display data on graphs
 
 # Sample commands
