@@ -31,11 +31,11 @@ Dates are needed as placeholders in the argument list, but don't do anything. Sa
 
 ### Short-term (v3.0, trades based on indicators):
 
-o create shell for Brain class, a class dedicated to making decisions based on strategies  
-o hardcode a basic strategy into brain (assesses market daily, provides ratios to Trader)  
-o probably need to refactor Trader by moving rebalancing into Brain  
-o program Brain to handle strategies based on different indicators and periods  
-o implement a way to read strategies from file in DataManager
+x create shell for Brain class, a class dedicated to making decisions based on strategies  
+x hardcode a basic strategy into Brain (assesses market daily, provides shares to Trader)  
+x probably need to refactor Trader by moving rebalancing into Brain  
+x program Brain to handle strategies based on different indicators and periods  
+x implement a way to read strategies from file in DataManager
 
 
 ### Long-term:

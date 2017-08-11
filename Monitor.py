@@ -33,15 +33,16 @@ class Monitor(object):
         market: A Market instance to reference during monitoring
     """
 
-    def __init__(self, portfolio, market):
+    def __init__(self, trader, market):
         """Initializes a Monitior with a Portfolio and Market instance.
 
         Args:
-            portfolio: A Portfolio instance to monitor
+            trader: A Trader instance to monitor
             market: A Market instance to reference during monitoring
         """
         # main attributes
-        self.portfolio = portfolio
+        self.trader = trader
+        self.portfolio = trader.portfolio
         self.market = market
         # getter mappings
         self._data_series_getter_for = {
@@ -80,7 +81,7 @@ class Monitor(object):
         self._portfolio_min_since_max = 0
         self._potential_drawdown_start = None
         # init all assets to be monitored
-        self._all_assets = set(self.market.stocks.keys())
+        self._all_assets = self.trader.get_assets_of_interest()
 
     def take_snapshot(self):
         """Records a snapshot of all supported stats for the Portfolio

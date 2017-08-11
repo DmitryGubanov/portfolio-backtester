@@ -126,8 +126,69 @@ class DataManager(object):
         # handle last line in file separately
         price_lookup[next_date.strftime(
             DataManager.DATE_FORMAT)] = float(next_line_data[4])
-
         return price_lookup
+
+    def build_strategy(self, strategy_name):
+        """Given a strategy name (the name of the file within which
+        the strategy is coded) and builds the data structure for Brain
+        to use, then returns the structure along with all assets and
+        indicators needed in the Market.
+
+        Args:
+            strategy_name: A name for the strategy to use - corresponds
+                to a file in the strategies dir
+
+        Returns:
+            A tuple containing the strategy structure, a set of assets
+            to add to the Market, and a set of indicators to add to the
+            Market
+        """
+        strategy_dir = 'strategies/'
+        lines = self._readlines(strategy_dir + strategy_name)
+        stocks_needed = set({})
+        indicators_needed = set({})
+        strategy = {
+            'assets': set({}),
+            'positions': []
+        }
+        for line in lines:
+            (ratio, ticker, buy_signal, sell_signal) = line.split(',')
+            strategy['assets'].add(ticker.upper())
+            stocks_needed.add(ticker.upper())
+            for signal in [buy_signal, sell_signal]:
+                (tickers, indicators) = self._parse_signal(signal)
+                stocks_needed |= tickers
+                indicators_needed |= indicators
+            strategy['positions'].append({
+                'is_holding': False,
+                'ratio': float(ratio),
+                'ticker': ticker.upper(),
+                'buy_signal': buy_signal,
+                'sell_signal': sell_signal
+            })
+        return (strategy, stocks_needed, indicators_needed)
+
+    def _parse_signal(self, signal_code):
+        """Parses a buy or sell signal and extracts any tickers and
+        indicators from it.
+
+        Args:
+            signal_code: A code for a buy or sell signal
+
+        Returns:
+            A tuple containing a set of tickers and a set of indicators
+        """
+        if signal_code in ['ALWAYS', 'NEVER']:
+            return (set({}), set({}))
+        tickers = set({})
+        indicators = set({})
+        (val_a_code, _, val_b_code) = signal_code.split(' ')
+        for code in [val_a_code, val_b_code]:
+            (ticker, indicator) = code.split('~')
+            tickers.add(ticker.upper())
+            if indicator not in ['PRICE']:
+                indicators.add(indicator.upper())
+        return (tickers, indicators)
 
     def _write_data_to_csv_file(self, filename, data, mode):
         """Writes an array of data to disk in CSV format.
@@ -154,6 +215,21 @@ class DataManager(object):
         """
         return self.data_location + ticker.upper() + ".csv"
 
+    def _readlines(self, filename):
+        """Returns the lines of the file for a given ticker.
+
+        Args:
+            filename: A string representing the name of a file
+
+        Returns:
+            An array with each element containing a line of the file
+        """
+        lines = []
+        if self._has_file(filename):
+            with open(filename, 'r') as file:
+                lines = [line.strip() for line in file]
+        return lines
+
     def _readlines_for(self, ticker):
         """Returns the lines of the file for a given ticker.
 
@@ -169,6 +245,17 @@ class DataManager(object):
             with open(self._filename_for(ticker), 'r') as file:
                 lines = [line.strip() for line in file]
         return lines
+
+    def _has_file(self, filename):
+        """Returns whether a file exists.
+
+        Args:
+            filename: A string representing the filename
+
+        Returns:
+            A boolean value representing whether or not the file exists
+        """
+        return os.path.isfile(filename)
 
     def _has_file_for(self, ticker):
         """Returns whether a file for a given ticker exists.

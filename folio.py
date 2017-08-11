@@ -107,13 +107,17 @@ def main():
         my_trader = Trader(args.portfolio[0], my_portfolio, my_market)
 
         # init simulator
-        my_monitor = Monitor(my_trader.portfolio, my_market)
+        my_monitor = Monitor(my_trader, my_market)
         my_sim = Simulator()
         my_sim.add_trader(my_trader)
         my_sim.use_market(my_market)
         my_sim.use_monitor(my_monitor)
 
-        my_trader.set_strategy(args.strategy[0])
+        (strategy, tickers, indicators) = db.build_strategy(args.strategy[0])
+        my_trader.add_assets_of_interest(strategy['assets'])
+        my_trader.set_strategy(strategy['positions'])
+        my_sim.use_stocks(tickers)
+        my_sim.use_indicators(indicators)
 
         if args.contribute:
             my_trader.set_contributions(args.contribute[0], args.contribute[1])
@@ -164,7 +168,7 @@ def main():
         pyplot.subplot(412)
         pyplot.stackplot(x, y, alpha=0.5)
         pyplot.grid(b=True, which='major', color='grey', linestyle='-')
-        pyplot.legend(sorted(my_trader.get_assets_of_interest()), loc='upper left')
+        pyplot.legend(sorted(strategy['assets']), loc='upper left')
 
         (x, y) = my_monitor.get_data_series('annual_returns')
         ax = pyplot.subplot(413)

@@ -39,21 +39,6 @@ class Trader(object):
         self.use_market(market)
         self.set_starting_cash(starting_cash)
 
-        # asset management
-        # self._desired_asset_ratios = {}
-        # self._desired_asset_shares = {}
-        # self._desired_trades = {'sell': {}, 'buy': {}}
-        # contributions
-
-        # self._strategy_settings = {
-        #     'contributions': None,
-        #     'rebalancing': None
-        # }
-        # self._strategies = {
-        #     'contributions': self._contribute,
-        #     'rebalancing': self._rebalance
-        # }
-
     def use_portfolio(self, portfolio):
         """Sets the Portfolio this Trader should use. Propagates the
         Portfolio to the Brain as well.
@@ -137,7 +122,15 @@ class Trader(object):
         Args:
             ticker: A string representing the ticker of a desired asset
         """
-        self._brain.assets_of_interest.append(ticker.upper())
+        self._brain.assets_of_interest.add(ticker.upper())
+
+    def add_assets_of_interest(self, tickers):
+        """Adds a set tickers to the assets of interest.
+
+        Args:
+            ticker: A set of tickers
+        """
+        self._brain.assets_of_interest |= tickers
 
     def set_desired_asset_ratio(self, ticker, ratio):
         """Sets an allocation for an asset.

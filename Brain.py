@@ -16,30 +16,8 @@ class Brain(object):
         """Initializes an empty Brain."""
         self._market = None
         self._portfolio = None
-        self.assets_of_interest = ['TMF', 'UPRO']
-        self.positions = [
-            {
-                'is_holding': False,
-                'ratio': 0.3,
-                'ticker': 'UPRO',
-                'buy_signal': 'ALWAYS',
-                'sell_signal': 'NEVER'
-            },
-            {
-                'is_holding': False,
-                'ratio': 0.4,
-                'ticker': 'TMF',
-                'buy_signal': 'ALWAYS',
-                'sell_signal': 'NEVER'
-            },
-            {
-                'is_holding': False,
-                'ratio': 0.3,
-                'ticker': 'UPRO',
-                'buy_signal': 'UPRO~PRICE > UPRO~SMA_190',
-                'sell_signal': 'UPRO~PRICE < UPRO~SMA_190'
-            }
-        ]
+        self.assets_of_interest = set({})
+        self.positions = []
         self.assets_to_trade = set({})
         self.rebalancing_period = None
         self.strategy_type = None
@@ -59,49 +37,7 @@ class Brain(object):
 
         Args:
             strategy: A keyword specifying which strategy to use."""
-        if strategy == 'timing':
-            self.assets_of_interest = ['TMF', 'UPRO']
-            self.positions = [
-                {
-                    'is_holding': False,
-                    'ratio': 0.05,
-                    'ticker': 'UPRO',
-                    'buy_signal': 'ALWAYS',
-                    'sell_signal': 'NEVER'
-                },
-                {
-                    'is_holding': False,
-                    'ratio': 0.25,
-                    'ticker': 'TMF',
-                    'buy_signal': 'ALWAYS',
-                    'sell_signal': 'NEVER'
-                },
-                {
-                    'is_holding': False,
-                    'ratio': 0.50,
-                    'ticker': 'UPRO',
-                    'buy_signal': 'UPRO~PRICE > UPRO~SMA_200',
-                    'sell_signal': 'UPRO~PRICE < UPRO~SMA_200'
-                }
-            ]
-        if strategy == 'static':
-            self.assets_of_interest = ['TMF', 'UPRO']
-            self.positions = [
-                {
-                    'is_holding': False,
-                    'ratio': 0.6,
-                    'ticker': 'UPRO',
-                    'buy_signal': 'ALWAYS',
-                    'sell_signal': 'NEVER'
-                },
-                {
-                    'is_holding': False,
-                    'ratio': 0.4,
-                    'ticker': 'TMF',
-                    'buy_signal': 'ALWAYS',
-                    'sell_signal': 'NEVER'
-                }
-            ]
+        self.positions = strategy
 
     def set_rebalancing_period(self, period):
         """Sets the rebalancing frequency. The Brain will adjust the
