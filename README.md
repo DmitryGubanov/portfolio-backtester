@@ -40,6 +40,11 @@ x implement Sharpe and Sortino ratios
 x implement previous high as indicator  
 o add some sort of tolerance/adjustments to previous high to not make it useless for years after crashes (need to brainstorm)  
 x initialize both ratios and shares in Brain to 0 for all assets before anything runs  
+o dynamic/adjusted buy and sell signals (keyword -> filled in during simulation)  
+o buy and sell signals with ANDs and ORs  
+o relative strength index  
+o identify peaks and valleys  
+
 
 
 ### Long-term:
@@ -48,6 +53,7 @@ o interface (e.g. web)
 o dynamic portfolio ratios depending on conditions  
 o benchmarks  
 o reimplement withdrawals   
+o gather very short term data (minutely or less) (possibly other program)
 
 # Version features/changelog
 
