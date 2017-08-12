@@ -122,7 +122,9 @@ class Trader(object):
         Args:
             ticker: A string representing the ticker of a desired asset
         """
-        self._brain.assets_of_interest.add(ticker.upper())
+        self._brain.assets_of_interest.add(ticker)
+        self._brain.desired_ratios[ticker] = 0
+        self._brain.desired_shares[ticker] = 0
 
     def add_assets_of_interest(self, tickers):
         """Adds a set tickers to the assets of interest.
@@ -131,6 +133,9 @@ class Trader(object):
             ticker: A set of tickers
         """
         self._brain.assets_of_interest |= tickers
+        for ticker in tickers:
+            self._brain.desired_ratios[ticker] = 0
+            self._brain.desired_shares[ticker] = 0
 
     def set_desired_asset_ratio(self, ticker, ratio):
         """Sets an allocation for an asset.

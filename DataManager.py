@@ -128,7 +128,7 @@ class DataManager(object):
             DataManager.DATE_FORMAT)] = float(next_line_data[4])
         return price_lookup
 
-    def build_strategy(self, strategy_name):
+    def build_strategy(self, strategy_name, strategy_dir='./'):
         """Given a strategy name (the name of the file within which
         the strategy is coded) and builds the data structure for Brain
         to use, then returns the structure along with all assets and
@@ -137,13 +137,14 @@ class DataManager(object):
         Args:
             strategy_name: A name for the strategy to use - corresponds
                 to a file in the strategies dir
+            strategy_dir: An optional value containing a custom
+                location for strategies (default: ./)
 
         Returns:
             A tuple containing the strategy structure, a set of assets
             to add to the Market, and a set of indicators to add to the
             Market
         """
-        strategy_dir = 'strategies/'
         lines = self._readlines(strategy_dir + strategy_name)
         stocks_needed = set({})
         indicators_needed = set({})

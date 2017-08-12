@@ -12,12 +12,21 @@ class Calculator(object):
     For example, indicator data series can be calculated here for
     charting purposes.
 
+    NOTE: To add an indicator, write two getter methods, one for a
+        dictionary and another for a series, named
+        'get_<indicator-name>' and 'get_<indicator-name>_series'. Then,
+        in the get_indicator method, add the two methods to the correct
+        mapping. Currently indicator getter functions need at least one
+        argument, even if a None will be passed.
+
     Currently supports:
         - Standard Moving Average for a given period
         - Exponential Moving Average for a given period
         - Moving Average Convergence/Divergence for a given set of
             periods
         - generating theoretical ETF data
+        - Previous High (i.e. the highest price the stock has been,
+            including the current day)
     """
 
     def __init__(self):
@@ -39,22 +48,30 @@ class Calculator(object):
             A dictionary mapping dates to indicator values
         """
         # decode
-        [indicator, period_code] = indicator_code.split('_')
-        period = period_code.split('-')
-        if len(period) == 1:
-            period = period[0]
+        code_parts = indicator_code.split('_')
+        indicator = code_parts[0]
+        if len(code_parts) == 1:
+            period = None
+        else:
+            period = code_parts[1].split('-')
+            if len(period) == 1:
+                period = period[0]
         # create mapping to methods
         if series:
             mapping = {
                 'SMA': self.get_sma_series,
                 'EMA': self.get_ema_series,
-                'MACD': self.get_macd_series
+                'MACD': self.get_macd_series,
+                'MACDSIGNAL': self.get_macd_series,
+                'PREVHIGH': self.get_prev_high_series
             }
         else:
             mapping = {
                 'SMA': self.get_sma,
                 'EMA': self.get_ema,
-                'MACD': self.get_macd
+                'MACD': self.get_macd,
+                'MACDSIGNAL': self.get_macd_signal,
+                'PREVHIGH': self.get_prev_high
             }
         # call correct method
         return mapping[indicator](period, price_lut)
@@ -156,8 +173,7 @@ class Calculator(object):
 
     def get_macd(self, periods, price_lut):
         """Calculates the Moving Average Convergence/Divergence for a
-        given period and returns a dictionary maping dates to lists for
-        MACD, signal, and histogram.
+        given period and returns a dictionary mapping dates to MACD.
 
         Args:
             period: A set of values representing the days for each
@@ -166,30 +182,51 @@ class Calculator(object):
                 calculations
 
         Returns:
-            A dictionary of sets of values for the MACD, signal line,
-            and MACD histogram at each point for the given values, i.e.
-            a set in the form:
-            {'date': [MACD, signal line, MACD histogram]}
+            A dictionary mapping dates to MACD values
         """
-        ret = {}
+        # ret = {}
         macd = {}
-        signal = {}
-        histogram = {}
+        # signal = {}
+        # histogram = {}
         dates = sorted(price_lut.keys())
         macd_short = self.get_ema(periods[0], price_lut)
         macd_long = self.get_ema(periods[1], price_lut)
         # calculate MACD first - needed for signal and histogram
         for date in dates:
             macd[date] = macd_short[date] - macd_long[date]
+        return macd
         # calculate signal - needed for histogram
-        signal = self.get_ema(periods[2], macd)
-        # calculate histogram
+        # signal = self.get_ema(periods[2], macd)
+        # # calculate histogram
+        # for date in dates:
+        #     histogram[date] = macd[date] - signal[date]
+        # # now convert everything to return format
+        # for date in dates:
+        #     ret[date] = [macd[date], signal[date], histogram[date]]
+        # return ret
+
+    def get_macd_signal(self, periods, price_lut):
+        """Calculates the signal line for the Moving Average
+        Convergence/Divergence for a given set of periods and returns a
+        dictionary mapping dates to signal line values.
+
+        Args:
+            period: A set of values representing the days for each
+                MACD period, i.e. [short, long, exponential/signal]
+            price_lut: A set of values on which to perform the MACD
+                calculations
+
+        Returns:
+            A dictionary mapping dates to MACD signal values
+        """
+        macd = {}
+        dates = sorted(price_lut.keys())
+        macd_short = self.get_ema(periods[0], price_lut)
+        macd_long = self.get_ema(periods[1], price_lut)
+        # calculate MACD first - needed for signal
         for date in dates:
-            histogram[date] = macd[date] - signal[date]
-        # now convert everything to return format
-        for date in dates:
-            ret[date] = [macd[date], signal[date], histogram[date]]
-        return ret
+            macd[date] = macd_short[date] - macd_long[date]
+        return self.get_ema(periods[2], macd)
 
     def get_macd_series(self, periods, price_lut):
         """Calculates the Moving Average Convergence/Divergence for a
@@ -221,6 +258,42 @@ class Calculator(object):
         for i, date in enumerate(dates):
             histogram.append(macd[date] - signal[i])
         return [[macd[d] for d in dates], signal, histogram]
+
+    def get_prev_high(self, period, price_lut):
+        """Calculates the previous high value for every point in the
+        given LUT.
+
+        Args:
+            period: A placeholder, just pass None for now
+            price_lut: A set f values on which to perform the previous
+                high calculation
+        Returns:
+            A dictionary of dates mapping to values
+        """
+        prev_high = {}
+        dates = sorted(price_lut.keys())
+        prev_high[dates[0]] = price_lut[dates[0]]
+        for i, date in enumerate(dates[1:]):
+            prev_high[date] = max(price_lut[date], prev_high[dates[i]])
+        return prev_high
+
+    def get_prev_high_series(self, period, price_lut):
+        """Calculates the previous high value for every point in the
+        given LUT.
+
+        Args:
+            period: A placeholder, just pass None for now
+            price_lut: A set f values on which to perform the previous
+                high calculation
+        Returns:
+            A dictionary of dates mapping to values
+        """
+        prev_high = []
+        dates = sorted(price_lut.keys())
+        prev_high.append(price_lut[dates[0]])
+        for date in dates[1:]:
+            prev_high.append(max(price_lut[date], prev_high[-1]))
+        return prev_high
 
     def generate_theoretical_data(self, ticker_tgt, ticker_src,
                                   step=0.00005, pos_adj=None, neg_adj=None):

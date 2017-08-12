@@ -60,7 +60,7 @@ class Portfolio(object):
             ticker: A string for the ticker of the holding to add
             amount: A value for the number of shares to buy
         """
-        if amount == 0:
+        if amount <= 0:
             return 0
         self.trades += 1
         price = float(self._market.query_stock(ticker))
@@ -85,7 +85,7 @@ class Portfolio(object):
             ticker: A string for the ticker of the holding to remove
             amount: A value for the number of shares to sell
         """
-        if amount == 0:
+        if amount <= 0:
             return 0
         self.trades += 1
         price = float(self._market.query_stock(ticker))

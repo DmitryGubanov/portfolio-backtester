@@ -111,7 +111,8 @@ class Brain(object):
             return False
         compare_using = {
             '>': op.gt,
-            '<': op.lt
+            '<': op.lt,
+            '=': op.eq
         }
         (value_a_code, operator, value_b_code) = signal_code.split(' ')
         return compare_using[operator](self._decode_and_get_value(value_a_code),

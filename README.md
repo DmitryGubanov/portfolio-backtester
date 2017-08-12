@@ -35,7 +35,11 @@ x create shell for Brain class, a class dedicated to making decisions based on s
 x hardcode a basic strategy into Brain (assesses market daily, provides shares to Trader)  
 x probably need to refactor Trader by moving rebalancing into Brain  
 x program Brain to handle strategies based on different indicators and periods  
-x implement a way to read strategies from file in DataManager
+x implement a way to read strategies from file in DataManager  
+x implement Sharpe and Sortino ratios  
+x implement previous high as indicator  
+o add some sort of tolerance/adjustments to previous high to not make it useless for years after crashes (need to brainstorm)  
+x initialize both ratios and shares in Brain to 0 for all assets before anything runs  
 
 
 ### Long-term:
@@ -116,3 +120,5 @@ WIP: 3.0
 > Goals: more intricate user programmed strategies
 
 #### v3.0, basic indicator related strategies
+- implement Brain class which Trader will reference to get needed share counts
+- implement custom strategies read from file (needed indicators and stocks are automatically extracted from the stratgies so only the files need to be changed to test a new strategy)

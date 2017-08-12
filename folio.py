@@ -46,8 +46,7 @@ def main():
         plots = 1
         indicators = {}
         for indicator_code in args.indicators:
-            (indicator, _) = indicator_code.split('_')
-            if indicator == 'MACD':
+            if indicator_code[0:4] == 'MACD':
                 plots = 2
             indicators[indicator_code] = calc.get_indicator(indicator_code,
                                                             data, True)
@@ -59,7 +58,10 @@ def main():
 
         # plot indicators
         for (indicator_code, series) in indicators.items():
-            (indicator, period_code) = indicator_code.split('_')
+            code_parts = indicator_code.split('_')
+            indicator = code_parts[0]
+            if len(code_parts) > 1:
+                period_code = code_parts[1]
             if indicator == 'MACD':
                 pyplot.subplot(plots * 100 + 12)
                 pyplot.plot(dates, series[0], label=indicator_code)
@@ -142,6 +144,11 @@ def main():
         print('initial: $' + currency(my_trader.starting_cash))
         print('final:   $' + currency(my_trader.portfolio.value()))
         print('trades:  {}'.format(my_portfolio.trades))
+        print('---------------------------')
+        print('Sharpe Ratio:  {}'.format(
+            my_monitor.get_statistic('sharpe_ratio')))
+        print('Sortino Ratio: {}'.format(
+            my_monitor.get_statistic('sortino_ratio')))
         print('---------------------------')
         print('CAGR:          {}%'.format(
             percent(my_monitor.get_statistic('cagr'))))
