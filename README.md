@@ -43,7 +43,12 @@ x initialize both ratios and shares in Brain to 0 for all assets before anything
 o dynamic/adjusted buy and sell signals (keyword -> filled in during simulation)  
 o buy and sell signals with ANDs and ORs  
 o relative strength index  
-o identify peaks and valleys  
+o identify peaks and valleys (draw functionality for now)  
+o identify support and resistance lines (draw functionality for now)  
+o logarithmic charts or daily returns instead of daily prices  
+o chart pattern: head and shoulders  
+o chart pattern: double top, double bottom  
+
 
 
 
@@ -57,7 +62,7 @@ o gather very short term data (minutely or less) (possibly other program)
 
 # Version features/changelog
 
-Current version: 2.4  
+Current version: 3.0  
 WIP: 3.0
 
 ## Version 1
@@ -126,5 +131,6 @@ WIP: 3.0
 > Goals: more intricate user programmed strategies
 
 #### v3.0, basic indicator related strategies
-- implement Brain class which Trader will reference to get needed share counts
-- implement custom strategies read from file (needed indicators and stocks are automatically extracted from the stratgies so only the files need to be changed to test a new strategy)
+- implement Brain class, where all decision making will happen
+- Trader now has a Brain, but otherwise only executes trades based on what Brain has decided (i.e. Brain calculates needed shares, Trader then references needed shares and executes trades so their Portfolio matches said shares)
+- implement custom strategies read from file (all needed data is automatically extracted from the strategies file so only the files need to be changed to test a new strategy)
