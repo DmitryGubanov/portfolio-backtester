@@ -56,6 +56,13 @@ max drawdown: -56.26%
   between 2007-10-10 and 2009-03-09, recovered by 2013-03-14
 
 ```
+
+Note on chart:
+- first chart: portfolio value vs time
+- second chart: asset allocation vs time (in this case, we're 100% in stocks the whole time)
+- third chart: annual returns
+- fourth chart: contributions and growth vs time (we start at 100% contributions and as time goes on, we grow as our assets grow - notice in 2009 we have more contributions than actual portfolio value, i.e. we've lost money overall)
+
 <img src="http://i.imgur.com/NuzTFZ0.png" alt="chart" />
 
 So on average we get 7.2% a year, but we would have had to weather a 56% drop during the 2008 recession (yikes).
