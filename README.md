@@ -26,6 +26,7 @@ A note on terminology:
 
 Download stock data for the stocks/funds with tickers SPY and TLT.
 ```
+$ mkdir data
 $ python3.5 Downloader.py --download SPY TLT
 ```
 > For the curious, SPY follows the S&P500 index (simply put, the stock market as a whole) while TLT follows the long-term treasury bond index (simply put, the apparent value of stable and relatively low risk investments). You invest in the stock market for growth purposes, but when the stock market is doing poorly, the viablility of more stable investments rises since they aren't as exposed to poor market conditions. As a result, the two are somewhat inversely correlated which makes bonds a 'natural' hedge (something you use to mitigate losses) for stocks.
