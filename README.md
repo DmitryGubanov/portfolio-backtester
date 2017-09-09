@@ -1,31 +1,139 @@
 # portfolio-backtester
 
-A command-line script I made to help me with making decisions with regards to choosing stocks in the stock market.
-
-In short, it's a portfolio backtester; i.e. given a portfolio, it'll tell you how that portfolio would've done in the past.
+A command-line script I made to help me with making decisions with regards to choosing stocks in the stock market. To oversimplify it, it's a portfolio backtester; i.e. given a portfolio, it'll tell you how that portfolio would've done in the past.
 
 Main features:
 - download stock data
 - calculate indicators: sma, ema, macd
-- generate new data for one stock based on existing data of other stock (intended for observing ETFs based on an index prior to an ETF's inception, e.g. UPRO is based on S&P, but UPRO didn't exist before 2009, so you can use the S&P data to generate UPRO to see its predicted behaviour before 2009)
+- draw stock charts with overlayed indicators
+- generate new data for one stock based on existing data of other stock (intended for ETFs based on an index prior to an ETF's inception, e.g. UPRO is based on S&P, but UPRO didn't exist before 2009, so you can use the S&P data to generate UPRO to see its predicted behaviour before 2009)
 - create basic portfolios of assets, specify rebalancing, contributions and simulate its past performance on a per-day basis
-- display data on graphs
+- create portfolios that react to indicators rather than just being static (e.g. buy stock X when it's below the SMA50, sell when it's above SMA10)
+- summarizes performance with statistics and display results on graphs
 
-# Sample commands
+# Sample usage for V3.0
 
 Requires python 3.5, matplotlib, argparse, urllib
 
-Commands are a temporary way to use the program until an interface is created
+This will act as an example of how this program can be used to tweak a common strategy for more desirable performance. I provided some sample strategies.
+
+A note on terminology:
+- Sharpe ratio: a ratio of gains to overall volatility, i.e. how much you gain overall vs how much you bounce around along the way there. Higher = better.
+- Sortino ratio: a 'refined' Sharpe ratio, in that it's a ratio of gains to negative volatility, i.e. how much you gain overall vs how many losses you had to weather to get there. Higher = better.
+- CAGR/Adjusted CAGR: Both are the same for this example. Simply put, it's your average yearly returns (cumulative annual growth rate).
+
+Download stock data for the stocks/funds with tickers SPY and TLT.
+```
+$ python3.5 Downloader.py --download SPY TLT
+```
+> For the curious, SPY follows the S&P500 index (simply put, the stock market as a whole) while TLT follows the long-term treasury bond index (simply put, the apparent value of stable and relatively low risk investments). You invest in the stock market for growth purposes, but when the stock market is doing poorly, the viablility of more stable investments rises since they aren't as exposed to poor market conditions. As a result, the two are somewhat inversely correlated which makes bonds a 'natural' hedge (something you use to mitigate losses) for stocks.
+
+Let's see where simply investing 10,000 in the stock market gets us:
+```
+$ python3.5 folio.py --portfolio 10000 --strategy stocks-only
+
+##################################
+# PERFORMANCE SUMMARY
+##################################
+initial: $10000.00
+final:   $28673.68
+trades:  1
+---------------------------
+Sharpe Ratio:  0.13015961697451908
+Sortino Ratio: 0.2555517731631023
+---------------------------
+CAGR:          7.22%
+Adjusted CAGR: 7.22%
+---------------------------
+best year:  25.13%
+worst year: -35.71%
+---------------------------
+max drawdown: -56.26%
+  between 2007-10-10 and 2009-03-09, recovered by 2013-03-14
 
 ```
-python3.5 Downloader.py --download AAPL AMD
-python3.5 folio.py --portfolio 10000 0 m q 1995-01-01 2017-08-01 AAPL 0.5 long AMD 0.5 long
+<img src="http://i.imgur.com/NuzTFZ0.png" alt="chart" />
+
+So on average we get 7.2% a year, but we would have had to weather a 56% drop during the 2008 recession (yikes). Let's try to add bonds, a 'natural' hedge to stocks.
 ```
+$ python3.5 folio.py --portfolio 10000 --strategy stocks-and-bonds
 
-This will download all AAPL and AMD stock data, then create a starting portfolio of $10,000 ('10000') and invest 50% of your portfolio into AAPL ('AAPL 0.5 long') and another 50% into AMD ('AMD 0.5 long'). As the days go on in the simulation, $0 will be contributed monthly ('0 m'), and the 50%/50% ratios will be rebalanced quarterly ('q')
+##################################
+# PERFORMANCE SUMMARY
+##################################
+initial: $10000.00
+final:   $23500.12
+trades:  2
+---------------------------
+Sharpe Ratio:  0.15580397381790653
+Sortino Ratio: 0.29533912934209955
+---------------------------
+CAGR:          5.82%
+Adjusted CAGR: 5.82%
+---------------------------
+best year:  15.67%
+worst year: -17.55%
+---------------------------
+max drawdown: -35.72%
+  between 2007-10-10 and 2009-03-09, recovered by 2012-02-24
+```
+<img src="http://i.imgur.com/5zhQrJv.png" alt="chart" />
 
-Dates are needed as placeholders in the argument list, but don't do anything. Same goes for 'long' keywords after the stock ticker(s). I don't plan to use the command line indefinitely and it's only there to test the functionality up until an interface is made, so making the command line "pretty" is very low priority at the moment.
+By introducing bonds, we've cut down our risk by ~40% at the cost of ~20% of our gains. As a result, the Sharpe and Sortino ratios are both higher. From the graphs, we can see our asset allocations have veered away from what we set intially (0.6 and 0.4, check the sample files), so let's rebalance quarterly to maintain our desired ratios.
 
+```
+$ python3.5 folio.py --portfolio 10000 --strategy stocks-and-bonds --rebalance q
+
+##################################
+# PERFORMANCE SUMMARY
+##################################
+initial: $10000.00
+final:   $25402.22
+trades:  114
+---------------------------
+Sharpe Ratio:  0.1765820993420145
+Sortino Ratio: 0.3315811452594389
+---------------------------
+CAGR:          6.36%
+Adjusted CAGR: 6.36%
+---------------------------
+best year:  16.98%
+worst year: -14.45%
+---------------------------
+max drawdown: -33.09%
+  between 2007-10-30 and 2009-03-09, recovered by 2011-05-31
+```
+<img src="http://i.imgur.com/IIoIR5E.png" alt="chart" />
+
+With our ratios maintained throughout the life of our portfolio, we've regained some of those lost gains and actually lost even more risk. You'll notice the Sharpe and Sortino ratios have once again increased. Let's try a timing strategy based on the Standard Moving Average indicator.
+
+```
+$ python3.5 folio.py --portfolio 10000 --strategy stocks-and-bonds --rebalance q
+
+##################################
+# PERFORMANCE SUMMARY
+##################################
+initial: $10000.00
+final:   $20147.15
+trades:  317
+---------------------------
+Sharpe Ratio:  0.16891167389583966
+Sortino Ratio: 0.393798491370434
+---------------------------
+CAGR:          4.74%
+Adjusted CAGR: 4.74%
+---------------------------
+best year:  11.59%
+worst year: -8.71%
+---------------------------
+max drawdown: -12.76%
+  between 2007-06-05 and 2009-03-09, recovered by 2009-09-16
+```
+<img src="http://i.imgur.com/Aq37jCM.png" alt="chart" />
+
+From our original, we've lost ~35% of our gains, but we've also lost ~80% of our risk. In fact, this is not immediately obvious, but the Sharpe and Sortinio ratios indicate this strategy sacrifices some upward movement to avoid a lot of downward movement. We're also making ~317 trades over the course of 15 years, which is a lot more than the original of 1 trade, but that comes out to about 20 trades a year, which really isn't that much.
+
+I knew these tweaks would have these results ahead of time, so it's entirely possible to get worse results from your tweaks. However, the point is this program makes it fairly easy to play around with various strategies to see how they would perform in the market conditions of the past.
 
 # Current work in progress
 
@@ -134,3 +242,5 @@ WIP: 3.0
 - implement Brain class, where all decision making will happen
 - Trader now has a Brain, but otherwise only executes trades based on what Brain has decided (i.e. Brain calculates needed shares, Trader then references needed shares and executes trades so their Portfolio matches said shares)
 - implement custom strategies read from file (all needed data is automatically extracted from the strategies file so only the files need to be changed to test a new strategy)
+- Sharpe and Sortino ratios implemented (helps compare strategy effectiveness)
+- separated MACD into two indicators: MACD and MACDSIGNAL
