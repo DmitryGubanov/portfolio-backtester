@@ -31,6 +31,7 @@ class Market(object):
         """
         self._db = DataManager()
         self.new_period = {'m': False, 'q': False, 'y': False}
+        self.commissions = 0
         self.stocks = {}
         self.stocks_indicators = {}
         if tickers != None:
@@ -88,7 +89,6 @@ class Market(object):
         for i in range(0, len(dates)):
             price_lut[dates[i]] = prices[i]
         self.stocks[ticker] = price_lut
-
 
     def current_date(self):
         """Returns the current date of this Market.

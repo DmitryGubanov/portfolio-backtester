@@ -8,7 +8,7 @@ Main features:
 - download stock data
 - calculate indicators: sma, ema, macd
 - generate new data for one stock based on existing data of other stock (intended for observing ETFs based on an index prior to an ETF's inception, e.g. UPRO is based on S&P, but UPRO didn't exist before 2009, so you can use the S&P data to generate UPRO to see its predicted behaviour before 2009)
-- create basic portfolios of assets, specify rebalancing, withdrawals and simulate its past performance on a per-day basis
+- create basic portfolios of assets, specify rebalancing, contributions and simulate its past performance on a per-day basis
 - display data on graphs
 
 # Sample commands
@@ -31,11 +31,25 @@ Dates are needed as placeholders in the argument list, but don't do anything. Sa
 
 ### Short-term (v3.0, trades based on indicators):
 
-o create shell for Brain class, a class dedicated to making decisions based on strategies  
-o hardcode a basic strategy into brain (assesses market daily, provides ratios to Trader)  
-o probably need to refactor Trader by moving rebalancing into Brain  
-o program Brain to handle strategies based on different indicators and periods  
-o implement a way to read strategies from file in DataManager
+x create shell for Brain class, a class dedicated to making decisions based on strategies  
+x hardcode a basic strategy into Brain (assesses market daily, provides shares to Trader)  
+x probably need to refactor Trader by moving rebalancing into Brain  
+x program Brain to handle strategies based on different indicators and periods  
+x implement a way to read strategies from file in DataManager  
+x implement Sharpe and Sortino ratios  
+x implement previous high as indicator  
+o add some sort of tolerance/adjustments to previous high to not make it useless for years after crashes (need to brainstorm)  
+x initialize both ratios and shares in Brain to 0 for all assets before anything runs  
+o dynamic/adjusted buy and sell signals (keyword -> filled in during simulation)  
+o buy and sell signals with ANDs and ORs  
+o relative strength index  
+o identify peaks and valleys (draw functionality for now)  
+o identify support and resistance lines (draw functionality for now)  
+o logarithmic charts or daily returns instead of daily prices  
+o chart pattern: head and shoulders  
+o chart pattern: double top, double bottom  
+
+
 
 
 ### Long-term:
@@ -44,10 +58,11 @@ o interface (e.g. web)
 o dynamic portfolio ratios depending on conditions  
 o benchmarks  
 o reimplement withdrawals   
+o gather very short term data (minutely or less) (possibly other program)
 
 # Version features/changelog
 
-Current version: 2.4  
+Current version: 3.0  
 WIP: 3.0
 
 ## Version 1
@@ -116,3 +131,6 @@ WIP: 3.0
 > Goals: more intricate user programmed strategies
 
 #### v3.0, basic indicator related strategies
+- implement Brain class, where all decision making will happen
+- Trader now has a Brain, but otherwise only executes trades based on what Brain has decided (i.e. Brain calculates needed shares, Trader then references needed shares and executes trades so their Portfolio matches said shares)
+- implement custom strategies read from file (all needed data is automatically extracted from the strategies file so only the files need to be changed to test a new strategy)

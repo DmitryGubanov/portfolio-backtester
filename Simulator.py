@@ -37,6 +37,8 @@ class Simulator(object):
         self._trader = None
         self._market = None
         self._monitor = None
+        self._stocks = set({})
+        self._indicators = set({})
         self.dates_testing = (None, None)
 
     def add_trader(self, trader):
@@ -62,6 +64,24 @@ class Simulator(object):
             monitor: A Monitor instance to use
         """
         self._monitor = monitor
+
+    def use_stocks(self, tickers):
+        """Adds a set of stocks to the stocks with which to populate
+        the Market.
+
+        Args:
+            tickers: A set of tickers
+        """
+        self._stocks |= set(tickers)
+
+    def use_indicators(self, indicators):
+        """Adds a set of indicators to the indicators with which to
+        populate the Market.
+
+        Args:
+            indicators: A set of indicators
+        """
+        self._indicators |= set(indicators)
 
     def set_start_date(self, date):
         """Sets the start date for this Simulator.
@@ -100,27 +120,16 @@ class Simulator(object):
 
         Specifically, adds all stocks to the Market and resets the
         Market's dates. Then, adds all relevant indicators."""
-        for asset in self._trader.assets_of_interest:
+        for asset in self._stocks:
             if asset not in self._market.stocks.keys():
                 self._market.add_stocks([asset])
-        self._market.set_default_dates()
-        # TODO temporary list of indicators until made more dynamic
-        indicators = [
-            'SMA_20',
-            'SMA_50',
-            'SMA_200',
-            'EMA_20',
-            'EMA_50',
-            'EMA_200',
-            'MACD_12-26-9'
-        ]
-        for asset in self._trader.assets_of_interest:
-            for indicator in indicators:
+            for indicator in self._indicators:
                 self._market.add_indicator(
                     asset,
                     indicator,
                     self._calc.get_indicator(indicator,
                                              self._market.stocks[asset]))
+        self._market.set_default_dates()    
 
     def _init_dates(self):
         """Initializes/resets the testing dates for this Simulator.

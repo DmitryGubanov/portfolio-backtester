@@ -1,5 +1,9 @@
+from datetime import timedelta
+from math import sqrt
+
 from utils import date_obj
 from utils import days_between
+
 
 class Monitor(object):
 
@@ -32,15 +36,16 @@ class Monitor(object):
         market: A Market instance to reference during monitoring
     """
 
-    def __init__(self, portfolio, market):
+    def __init__(self, trader, market):
         """Initializes a Monitior with a Portfolio and Market instance.
 
         Args:
-            portfolio: A Portfolio instance to monitor
+            trader: A Trader instance to monitor
             market: A Market instance to reference during monitoring
         """
         # main attributes
-        self.portfolio = portfolio
+        self.trader = trader
+        self.portfolio = trader.portfolio
         self.market = market
         # getter mappings
         self._data_series_getter_for = {
@@ -52,14 +57,10 @@ class Monitor(object):
         self._statistic_getter_for = {
             'max_drawdown': self._get_max_drawdown,
             'cagr': self._get_cagr,
-            'adjusted_cagr': self._get_adjusted_cagr
+            'adjusted_cagr': self._get_adjusted_cagr,
+            'sharpe_ratio': self._get_sharpe_ratio,
+            'sortino_ratio': self._get_sortino_ratio
         }
-        # TODO remove?
-        # self._indicator_getter_for = {
-        #     'sma': self._get_sma,
-        #     'ema': self._get_ema,
-        #     'macd': self._get_macd
-        # }
 
     def init_stats(self):
         """Runs any necessary setup that needs to happen before stats
@@ -68,9 +69,12 @@ class Monitor(object):
         self._dates = []
         self._all_assets = {}
         self._daily_value_history = {}
+        self._monthly_value_history = {}
         self._annual_value_history = {}
         self._asset_alloc_history = {}
         self._contrib_vs_growth_history = {}
+        self._daily_returns = {}
+        self._monthly_returns = {}
         self._annual_returns = {}
         self._max_drawdown = {
             'amount': 0, 'from': None, 'to': None, 'recovered_by': None
@@ -79,7 +83,7 @@ class Monitor(object):
         self._portfolio_min_since_max = 0
         self._potential_drawdown_start = None
         # init all assets to be monitored
-        self._all_assets = set(self.market.stocks.keys())
+        self._all_assets = self.trader.get_assets_of_interest()
 
     def take_snapshot(self):
         """Records a snapshot of all supported stats for the Portfolio
@@ -88,6 +92,7 @@ class Monitor(object):
         self._record_portfolio_value()
         self._record_asset_allocation()
         self._record_contribution_vs_growth()
+        self._record_monthly_return()
         self._record_annual_return()
         self._update_drawdown()
 
@@ -126,15 +131,16 @@ class Monitor(object):
             statistic
         """
         return self.market.query_stock_indicator(ticker, indicator)
-        # TODO remove?
-        #return self._statistic_getter_for[statistic](ticker, period)
 
     def _record_portfolio_value(self):
         """Internal method for recording the Portfolio value."""
+        (curr_year, curr_month, _) = self.market.current_date().split('-')
         self._daily_value_history[self.market.current_date()] \
             = self.portfolio.value()
-        if self.market.new_period['y'] or len(self._annual_value_history) == 0:
-            curr_year = str(date_obj(self.market.current_date()).year)
+        if self.market.new_period['m'] or not len(self._monthly_value_history):
+            self._monthly_value_history[curr_year + '-' + curr_month] \
+                = self.portfolio.value()
+        if self.market.new_period['y'] or not len(self._annual_value_history):
             self._annual_value_history[curr_year] \
                 = self.portfolio.value()
 
@@ -160,17 +166,34 @@ class Monitor(object):
             ratio['growth'] = max(0, 1 - ratio['contrib'])
         self._contrib_vs_growth_history[self.market.current_date()] = ratio
 
+    def _record_monthly_return(self):
+        """Internal method for recording the Portfolio's monthly
+        returns."""
+        if (not self.market.new_period['m']
+                or len(self._monthly_value_history) <= 1):
+            return
+        this_dt = date_obj(self.market.current_date())
+        last_dt = (date_obj(self.market.current_date()).replace(day=1)
+                   - timedelta(1))
+        this_month = str(this_dt.year) + '-' + ('0' + str(this_dt.month))[-2:]
+        last_month = str(last_dt.year) + '-' + ('0' + str(last_dt.month))[-2:]
+        self._monthly_returns[last_month] = \
+            (self._monthly_value_history[this_month]
+             / self._monthly_value_history[last_month]
+             - 1)
+
     def _record_annual_return(self):
         """Internal method for recording the Portfolio's annual
         returns."""
-        if not self.market.new_period['y']:
+        if (not self.market.new_period['y']
+                or len(self._annual_value_history) <= 1):
             return
-        this_year = date_obj(self.market.current_date()).year
-        if len(self._annual_value_history) > 1:
-            self._annual_returns[str(this_year - 1)] = \
-                (self._annual_value_history[str(this_year)]
-                 / self._annual_value_history[str(this_year - 1)]
-                 - 1)
+        (this_year, _, _) = self.market.current_date().split('-')
+        last_year = str(int(this_year) - 1)
+        self._annual_returns[last_year] = \
+            (self._annual_value_history[this_year]
+             / self._annual_value_history[last_year]
+             - 1)
 
     def _update_drawdown(self):
         """Updates the maximum drawdown for this Monitor's
@@ -283,8 +306,8 @@ class Monitor(object):
         Returns:
             A value representing the CAGR
         """
-        start_val = self._daily_value_history[self._dates[0]]
-        end_val = self._daily_value_history[self._dates[-1]]
+        start_val = self.portfolio.starting_cash
+        end_val = self.portfolio.value()
         years = days_between(self._dates[0], self._dates[-1]) / 365.25
         return (end_val / start_val) ** (1 / years) - 1
 
@@ -295,51 +318,56 @@ class Monitor(object):
         Returns:
             A value representing the adjusted CAGR
         """
-        start_val = self._daily_value_history[self._dates[0]]
-        end_val = self._daily_value_history[self._dates[-1]]
+        start_val = self.portfolio.starting_cash
+        end_val = self.portfolio.value()
         years = days_between(self._dates[0], self._dates[-1]) / 365.25
-        contributions = self.portfolio.total_contributions
-        return ((end_val - contributions) / start_val) ** (1 / years) - 1
+        contrib = self.portfolio.total_contributions
+        return ((end_val - contrib + start_val) / start_val) ** (1 / years) - 1
 
-    # TODO remove?
-    # def _get_sma(self, ticker, period):
-    #     """Returns the SMA value for a given period at the current date
-    #     in this Monitor, i.e. the last date for which there was a
-    #     snapshot taken.
-    #
-    #     Args:
-    #         period: A value representing the period for the SMA
-    #
-    #     Returns:
-    #         A value representing an SMA
-    #     """
-    #     prices = self.market.query_stock(ticker, period)
-    #     return sum(prices) / len(prices)
-    #
-    # def _get_ema(self, ticker, period):
-    #     """Calculates and returns the EMA value for a given period at
-    #     the current date in this Monitor, i.e. the last date for which
-    #     there was a snapshot taken.
-    #
-    #     Args:
-    #         period: A value representing the period for the EMA
-    #
-    #     Returns:
-    #         A value representing an EMA
-    #     """
-    #     return
-    #
-    # def _get_macd(self, ticker, periods):
-    #     """Calculates and returns the MACD values for the given periods
-    #     at the current date in this Monitor, i.e. the last date for
-    #     which there was a snapshot taken.
-    #
-    #     Args:
-    #         periods: A tuple of value representing the periods for the
-    #         MACD
-    #
-    #     Returns:
-    #         A tuple of values representing the MACD, signal, and
-    #         histogram
-    #     """
-    #     return
+    def _get_sortino_ratio(self):
+        """Internal function for calculating the Sortino ratio of a
+        portfolio.
+
+        Returns:
+            A value representing the Sortino ratio.
+        """
+        # risk_free_return = 0.01  # yearly 08/2017 1-month T-bill rate
+        risk_free_return = 0.00083  # monthly 08/2017 1-month T-bill rate
+        # excess_returns
+        excess_returns = []
+        neg_excess_returns = []
+        for ret in self._monthly_returns.values():
+            excess_returns.append(ret - risk_free_return)
+            if ret - risk_free_return < 0:
+                neg_excess_returns.append(ret - risk_free_return)
+        excess_return_mean = sum(excess_returns) / len(excess_returns)
+        neg_excess_return_mean = (sum(neg_excess_returns)
+                                  / len(neg_excess_returns))
+        # standard deviation
+        if len(neg_excess_returns) <= 1:
+            return 'undef'
+        stdev = sqrt(
+            sum([(ret - neg_excess_return_mean) ** 2
+                 for ret in neg_excess_returns])
+            / len(excess_returns))
+        return excess_return_mean / stdev
+
+    def _get_sharpe_ratio(self):
+        """Internal function for calculating the Sharpe ratio of a
+        portfolio.
+
+        Returns:
+            A value representing the Sharpe ratio.
+        """
+        # risk_free_return = 0.01  # yearly 08/2017 1-month T-bill rate
+        risk_free_return = 0.00083  # monthly 08/2017 1-month T-bill rate
+        # excess_returns
+        excess_returns = []
+        for ret in self._monthly_returns.values():
+            excess_returns.append(ret - risk_free_return)
+        excess_return_mean = sum(excess_returns) / len(excess_returns)
+        # standard deviation
+        stdev = sqrt(
+            sum([(ret - excess_return_mean) ** 2 for ret in excess_returns])
+            / len(excess_returns))
+        return excess_return_mean / stdev

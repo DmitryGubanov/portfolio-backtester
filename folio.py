@@ -46,8 +46,7 @@ def main():
         plots = 1
         indicators = {}
         for indicator_code in args.indicators:
-            (indicator, _) = indicator_code.split('_')
-            if indicator == 'MACD':
+            if indicator_code[0:4] == 'MACD':
                 plots = 2
             indicators[indicator_code] = calc.get_indicator(indicator_code,
                                                             data, True)
@@ -59,7 +58,10 @@ def main():
 
         # plot indicators
         for (indicator_code, series) in indicators.items():
-            (indicator, period_code) = indicator_code.split('_')
+            code_parts = indicator_code.split('_')
+            indicator = code_parts[0]
+            if len(code_parts) > 1:
+                period_code = code_parts[1]
             if indicator == 'MACD':
                 pyplot.subplot(plots * 100 + 12)
                 pyplot.plot(dates, series[0], label=indicator_code)
@@ -103,38 +105,34 @@ def main():
     if args.portfolio:
         # init main objects
         my_market = Market()
-        my_trader = Trader()
         my_portfolio = Portfolio()
-        my_trader.portfolio = my_portfolio
-        my_trader.set_starting_cash(args.portfolio[0])
+        my_trader = Trader(args.portfolio[0], my_portfolio, my_market)
 
         # init simulator
-        my_monitor = Monitor(my_trader.portfolio, my_market)
+        my_monitor = Monitor(my_trader, my_market)
         my_sim = Simulator()
         my_sim.add_trader(my_trader)
         my_sim.use_market(my_market)
         my_sim.use_monitor(my_monitor)
 
-        # parse args
+        (strategy, tickers, indicators) = db.build_strategy(args.strategy[0])
+        my_trader.add_assets_of_interest(strategy['assets'])
+        my_trader.set_strategy(strategy['positions'])
+        my_sim.use_stocks(tickers)
+        my_sim.use_indicators(indicators)
+
+        if args.contribute:
+            my_trader.set_contributions(args.contribute[0], args.contribute[1])
+
+        if args.rebalance:
+            my_trader.set_rebalancing_period(args.rebalance[0])
+
         if args.use_generated:
-            for i in range(0, len(args.use_generated) // 2):
-                ticker_a = args.use_generated[i * 2]
-                ticker_b = args.use_generated[i * 2 + 1]
-                (data, _) = calc.generate_theoretical_data(ticker_a, ticker_b)
-                my_market.inject_stock_data(ticker_a, None, None, data)
-        for i in range(0, len(args.portfolio[6:]) // 3):
-            my_trader.add_asset_of_interest(args.portfolio[i * 3 + 6])
-            my_trader.set_desired_asset_ratio(args.portfolio[i * 3 + 6],
-                                              float(args.portfolio[i * 3 + 7]))
-        if args.portfolio[2] != "None" and args.portfolio[1] != "None":
-            my_trader.set_strategy('contributions',
-                                   [args.portfolio[2], args.portfolio[1]])
-        if args.portfolio[3] != "None":
-            my_trader.set_strategy('rebalancing', [args.portfolio[3]])
-        if args.portfolio[4]:
-            my_sim.set_start_date(args.portfolio[4])
-        if args.portfolio[5]:
-            my_sim.set_end_date(args.portfolio[5])
+            for i in range(len(args.use_generated) // 2):
+                gen = args.use_generated[i * 2]
+                src = args.use_generated[i * 2 + 1]
+                (data, _) = calc.generate_theoretical_data(gen, src)
+                my_market.inject_stock_data(gen, None, None, data)
 
         # run simulation
         my_sim.simulate()
@@ -145,6 +143,12 @@ def main():
         print('##################################')
         print('initial: $' + currency(my_trader.starting_cash))
         print('final:   $' + currency(my_trader.portfolio.value()))
+        print('trades:  {}'.format(my_portfolio.trades))
+        print('---------------------------')
+        print('Sharpe Ratio:  {}'.format(
+            my_monitor.get_statistic('sharpe_ratio')))
+        print('Sortino Ratio: {}'.format(
+            my_monitor.get_statistic('sortino_ratio')))
         print('---------------------------')
         print('CAGR:          {}%'.format(
             percent(my_monitor.get_statistic('cagr'))))
@@ -171,7 +175,7 @@ def main():
         pyplot.subplot(412)
         pyplot.stackplot(x, y, alpha=0.5)
         pyplot.grid(b=True, which='major', color='grey', linestyle='-')
-        pyplot.legend(sorted(my_trader.assets_of_interest), loc='upper left')
+        pyplot.legend(sorted(strategy['assets']), loc='upper left')
 
         (x, y) = my_monitor.get_data_series('annual_returns')
         ax = pyplot.subplot(413)
@@ -188,13 +192,105 @@ def main():
 
         pyplot.show()
 
+
+    # if args.portfolio:
+    #     # init main objects
+    #     my_market = Market()
+    #     my_trader = Trader()
+    #     my_portfolio = Portfolio()
+    #     my_trader.portfolio = my_portfolio
+    #     my_trader.set_starting_cash(args.portfolio[0])
+    #
+    #     # init simulator
+    #     my_monitor = Monitor(my_trader.portfolio, my_market)
+    #     my_sim = Simulator()
+    #     my_sim.add_trader(my_trader)
+    #     my_sim.use_market(my_market)
+    #     my_sim.use_monitor(my_monitor)
+    #
+    #     # parse args
+    #     if args.use_generated:
+    #         for i in range(0, len(args.use_generated) // 2):
+    #             ticker_a = args.use_generated[i * 2]
+    #             ticker_b = args.use_generated[i * 2 + 1]
+    #             (data, _) = calc.generate_theoretical_data(ticker_a, ticker_b)
+    #             my_market.inject_stock_data(ticker_a, None, None, data)
+    #     for i in range(0, len(args.portfolio[6:]) // 3):
+    #         my_trader.add_asset_of_interest(args.portfolio[i * 3 + 6])
+    #         my_trader.set_desired_asset_ratio(args.portfolio[i * 3 + 6],
+    #                                           float(args.portfolio[i * 3 + 7]))
+    #     if args.portfolio[2] != "None" and args.portfolio[1] != "None":
+    #         my_trader.set_strategy('contributions',
+    #                                [args.portfolio[2], args.portfolio[1]])
+    #     if args.portfolio[3] != "None":
+    #         my_trader.set_strategy('rebalancing', [args.portfolio[3]])
+    #     # if args.portfolio[4]:
+    #     #     my_sim.set_start_date(args.portfolio[4])
+    #     # if args.portfolio[5]:
+    #     #     my_sim.set_end_date(args.portfolio[5])
+    #
+    #     # run simulation
+    #     my_sim.simulate()
+    #
+    #     # print some stats
+    #     print('##################################')
+    #     print('# PERFORMANCE SUMMARY')
+    #     print('##################################')
+    #     print('initial: $' + currency(my_trader.starting_cash))
+    #     print('final:   $' + currency(my_trader.portfolio.value()))
+    #     print('---------------------------')
+    #     print('CAGR:          {}%'.format(
+    #         percent(my_monitor.get_statistic('cagr'))))
+    #     print('Adjusted CAGR: {}%'.format(
+    #         percent(my_monitor.get_statistic('adjusted_cagr'))))
+    #     print('---------------------------')
+    #     print('best year:  {}%'.format(
+    #         percent(max(my_monitor.get_data_series('annual_returns')[1]))))
+    #     print('worst year: {}%'.format(
+    #         percent(min(my_monitor.get_data_series('annual_returns')[1]))))
+    #     print('---------------------------')
+    #     drawdown = my_monitor.get_statistic('max_drawdown')
+    #     print('max drawdown: {}%'.format(percent(drawdown['amount'])))
+    #     print('  between {} and {}, recovered by {}'.format(
+    #         drawdown['from'], drawdown['to'], drawdown['recovered_by']))
+    #
+    #     # show plots
+    #     (x, y) = my_monitor.get_data_series('portfolio_values')
+    #     pyplot.subplot(411)
+    #     pyplot.plot(x, y)
+    #     pyplot.grid(b=False, which='major', color='grey', linestyle='-')
+    #
+    #     (x, y) = my_monitor.get_data_series('asset_allocations')
+    #     pyplot.subplot(412)
+    #     pyplot.stackplot(x, y, alpha=0.5)
+    #     pyplot.grid(b=True, which='major', color='grey', linestyle='-')
+    #     pyplot.legend(sorted(my_trader.assets_of_interest), loc='upper left')
+    #
+    #     (x, y) = my_monitor.get_data_series('annual_returns')
+    #     ax = pyplot.subplot(413)
+    #     pyplot.bar(list(range(len(x))), y, 0.5, color='blue')
+    #     ax.set_xticks(list(range(len(x))))
+    #     ax.set_xticklabels(x)
+    #     pyplot.grid(b=True, which='major', color='grey', linestyle='-')
+    #
+    #     (x, y) = my_monitor.get_data_series('contribution_vs_growth')
+    #     pyplot.subplot(414)
+    #     pyplot.stackplot(x, y, alpha=0.5)
+    #     pyplot.grid(b=True, which='major', color='grey', linestyle='-')
+    #     pyplot.legend(['Contributions', 'Growth'], loc='upper left')
+    #
+    #     pyplot.show()
+
     exit()
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Stock program (WIP).')
     parser.add_argument('--generate', nargs=2)
-    parser.add_argument('--portfolio', nargs='+')
+    parser.add_argument('--portfolio', nargs=1)
+    parser.add_argument('--strategy', nargs=1)
+    parser.add_argument('--contribute', nargs=2)
+    parser.add_argument('--rebalance', nargs=1)
     parser.add_argument('--use-generated', nargs='+')
     parser.add_argument('--draw', nargs=1)
     parser.add_argument('--indicators', nargs='+')
