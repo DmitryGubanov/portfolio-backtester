@@ -87,7 +87,7 @@ class DataManager(object):
             return self._read_csv_file_rows_for(ticker)
         return []
 
-    def build_price_lut(self, ticker, fill=False):
+    def build_price_lut(self, ticker, fill=True):
         """Builds a price look up table for a given ticker.
 
         Args:
