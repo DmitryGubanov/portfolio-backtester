@@ -22,7 +22,7 @@ A note on terminology:
 - Sortino ratio: a 'refined' Sharpe ratio, in that it's a ratio of gains to negative volatility, i.e. how much you gain overall vs how many losses you had to weather to get there. Higher = better.
 - CAGR/Adjusted CAGR: Both are the same for this example. Simply put, it's your average yearly returns (cumulative annual growth rate).
 
-### Step 0
+### Step 0: Downloading the data
 
 Download stock data for the stocks/funds with tickers SPY and TLT.
 ```
@@ -30,7 +30,7 @@ $ python3.5 Downloader.py --download SPY TLT
 ```
 > For the curious, SPY follows the S&P500 index (simply put, the stock market as a whole) while TLT follows the long-term treasury bond index (simply put, the apparent value of stable and relatively low risk investments). You invest in the stock market for growth purposes, but when the stock market is doing poorly, the viablility of more stable investments rises since they aren't as exposed to poor market conditions. As a result, the two are somewhat inversely correlated which makes bonds a 'natural' hedge (something you use to mitigate losses) for stocks.
 
-### Step 1
+### Step 1: Testing standard strategy (our benchmark)
 
 Let's see where simply investing 10,000 in the stock market gets us:
 ```
@@ -60,9 +60,9 @@ max drawdown: -56.26%
 
 So on average we get 7.2% a year, but we would have had to weather a 56% drop during the 2008 recession (yikes).
 
-### Step 2
+### Step 2: Introduce bonds
 
-Let's try to add bonds, a 'natural' hedge to stocks.
+Let's try to add bonds, a 'natural' hedge to stocks, to try and mitigate some of those losses.
 ```
 $ python3.5 folio.py --portfolio 10000 --strategy stocks-and-bonds
 
@@ -89,9 +89,9 @@ max drawdown: -35.72%
 
 By introducing bonds, we've cut down our risk by ~40% at the cost of ~20% of our gains. As a result, the Sharpe and Sortino ratios are both higher. From the graphs, we can see our asset allocations have veered away from what we set intially (0.6 and 0.4, check the sample files).
 
-### Step 3
+### Step 3: Maintain ratios by rebalancing
 
-Let's rebalance quarterly to maintain our desired ratios.
+Let's rebalance quarterly to maintain our desired ratios of 60% SPY and 40% TLT, as defined by our strategy file.
 
 ```
 $ python3.5 folio.py --portfolio 10000 --strategy stocks-and-bonds --rebalance q
@@ -119,9 +119,9 @@ max drawdown: -33.09%
 
 With our ratios maintained throughout the life of our portfolio, we've regained some of those lost gains and actually lost even more risk. You'll notice the Sharpe and Sortino ratios have once again increased.
 
-### Step 4
+### Step 4: Experiment with timing
 
-Let's try a timing strategy based on the Standard Moving Average indicator.
+Let's try a timing strategy based on the Standard Moving Average indicator. In this case we'll use the SMA 100. It's a fairly long term indicator. In short, we'll sell when there's a sharp enough negative movement to break a positive 100-day trend, but buy it back when it recovers above that trend. Theoretically, this is to avoid big negative movements; realistically, we'll see:
 
 ```
 $ python3.5 folio.py --portfolio 10000 --strategy stocks-and-bonds --rebalance q
@@ -148,6 +148,8 @@ max drawdown: -12.76%
 <img src="http://i.imgur.com/Aq37jCM.png" alt="chart" />
 
 From our original, we've lost ~35% of our gains, but we've also lost ~80% of our risk. In fact, this is not immediately obvious, but the Sharpe and Sortinio ratios indicate this strategy sacrifices some upward movement to avoid a lot of downward movement. We're also making ~317 trades over the course of 15 years, which is a lot more than the original of 1 trade, but that comes out to about 20 trades a year, which really isn't that much.
+
+### Conclusion
 
 I knew these tweaks would have these results ahead of time, so it's entirely possible to get worse results from your tweaks. However, the point is this program makes it fairly easy to play around with various strategies to see how they would perform in the market conditions of the past.
 
