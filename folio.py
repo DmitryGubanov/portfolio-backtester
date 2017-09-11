@@ -192,7 +192,6 @@ def main():
 
         pyplot.show()
 
-
     # if args.portfolio:
     #     # init main objects
     #     my_market = Market()
@@ -285,15 +284,22 @@ def main():
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Stock program (WIP).')
-    parser.add_argument('--generate', nargs=2)
-    parser.add_argument('--portfolio', nargs=1)
-    parser.add_argument('--strategy', nargs=1)
-    parser.add_argument('--contribute', nargs=2)
-    parser.add_argument('--rebalance', nargs=1)
-    parser.add_argument('--use-generated', nargs='+')
-    parser.add_argument('--draw', nargs=1)
-    parser.add_argument('--indicators', nargs='+')
+    parser = argparse.ArgumentParser(description='Stock backtester (WIP).')
+    parser.add_argument('--draw', nargs=1, help='Draw a chart for a ticker')
+    parser.add_argument('--indicators', nargs='+',
+                        help='Use with --draw. Specify an indicator or set of indicators to show on top of the chart for --draw. Example: SMA_50 SMA_20')
+    parser.add_argument('--generate', nargs=2,
+                        help='Generate data for first based on second. Standalone.')
+    parser.add_argument('--portfolio', nargs=1,
+                        help='Specify a portfolio amount.')
+    parser.add_argument('--strategy', nargs=1,
+                        help='Use with --portfolio. Specify a strategy file to use. Currently this is necessary for your portfolio to do anything interesting.')
+    parser.add_argument('--contribute', nargs=2,
+                        help='Use with --portfolio. Specify an amount to contribute with a frequency')
+    parser.add_argument('--rebalance', nargs=1,
+                        help='Use with --portfolio. Specify a frequency at which to rebalance.')
+    parser.add_argument('--use-generated', nargs='+',
+                        help='Use with --portfolio or --draw. Specify pairs of tickers, wherein the first of the pair will be generated based on the second. This will replace the data used in --draw or --portfolio.')
 
     db = DataManager()
     calc = Calculator()

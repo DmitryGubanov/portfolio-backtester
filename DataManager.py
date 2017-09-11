@@ -1,3 +1,4 @@
+import errno
 import os
 import os.path
 import datetime
@@ -38,6 +39,7 @@ class DataManager(object):
                 data dir will be on disk, default: ./data/
         """
         self.data_location = data_location
+        os.makedirs(self.data_location, exist_ok=True)
 
     def write_stock_data(self, ticker, data, append):
         """Writes an array of data to a file on disk.
