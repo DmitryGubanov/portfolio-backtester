@@ -2,7 +2,7 @@
 
 A command-line script I made to help me with making decisions with regards to choosing stocks in the stock market. To oversimplify it, it's a portfolio backtester; i.e. given a portfolio, it'll tell you how that portfolio would've done in the past.
 
-> NOTE: I've included definitions and links for some words at the bottom, since stock terminology is used in describing some functionality. Words with definitions at the bottom have been **_emphasized_**
+> NOTE: I've included definitions and links for some words at the bottom, since stock terminology is used in describing some functionality. Words with definitions at the bottom have been **_emphasized_**. If you mousover, a short summary should appear, but you can click to navigate to the actual definitions
 
 Main features:
 - Download day-by-day stock data from Google using Downloader.py
@@ -17,6 +17,19 @@ Main features:
 Experimental features:
 - Generating data for one stock based on data of another stock. Example: stock A is correlated to stock B, but stock A only has data back to 2009, while stock B has data going back to 1990. You can use this data generation to generate data for stock A back to 1990 based on stock B. Intended for use on **_leveraged ETFs_**.
 
+# 0. Table of contents
+
+[1. Prerequisites](https://github.com/DmitryGubanov/portfolio-backtester/tree/v3.0-basic-timing-strategies#1-prerequisites)
+
+[2. Sample usage](https://github.com/DmitryGubanov/portfolio-backtester/tree/v3.0-basic-timing-strategies#2-sample-usage)
+
+[3. Advanced usage]()
+
+[4. Current work in progress]()
+
+[5. Changelog]
+
+[6. Definitions]
 
 # 1. Prerequisites
 
@@ -30,7 +43,7 @@ $ pip install matplotlib
 
 Finally, you're probably going to want to clone this repo.
 
-# 2. Sample usage for V3.0
+# 2. Sample usage
 
 This will act as an example of how this program can be used to tweak a common portfolio strategy for more desirable performance. I provided some sample strategies.
 
@@ -293,9 +306,11 @@ WIP: 3.0
 
 > NOTE: Some definitions have been pulled from or influenced by Investopedia. Terminology is also simplified to avoid using undefined terms in definitions.
 
-**_Indicator_**: Indicators are statistics used to measure current conditions as well as to forecast financial or economic trends. http://www.investopedia.com/terms/i/indicator.asp
+#### Indicator
+Indicators are statistics used to measure current conditions as well as to forecast financial or economic trends. http://www.investopedia.com/terms/i/indicator.asp
 
-**_SMA (Simple Moving Average)_**: Always has a period (number of days, X) associated with it. The average price for a stock over the last X days. Typically used to quantify trends. http://www.investopedia.com/terms/s/sma.asp
+#### SMA (Simple Moving Average)####
+Always has a period (number of days, X) associated with it. The average price for a stock over the last X days. Typically used to quantify trends. http://www.investopedia.com/terms/s/sma.asp
 
 **_EMA (Exponential Moving Average)_**: Always has a period (number of days, X) associated with it. Similar to the SMA, but the weight given to each price goes down exponentially as you go backwards in time. Whereas in a SMA, equal weight is given to each day. http://www.investopedia.com/terms/e/ema.asp
 
