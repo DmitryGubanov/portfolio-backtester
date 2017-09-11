@@ -60,6 +60,8 @@ $ python3.5 Downloader.py --download SPY TLT
 Let's see where simply investing 10,000 in the stock market gets us:
 > NOTE: if you pay attention to the command, you'll notice '--strategy stocks-only'
 
+> ANOTHER NOTE: Your outputs will differ from mine, since time has passed and the stocks we're using in this example are real stocks which change price over time
+
 ```
 $ python3.5 folio.py --portfolio 10000 --strategy stocks-only
 
@@ -198,7 +200,10 @@ This section is for using some of the more advanced features.
 [3.2 Adjusting/creating  strategies](https://github.com/DmitryGubanov/portfolio-backtester/tree/v3.0-basic-timing-strategies#32-adjusting-timing-strategies)
 
 ### 3.1 Generating data
+To be created later
+
 ### 3.2 Adjusting timing strategies
+To be created later
 
 # 4. Current work in progress
 
