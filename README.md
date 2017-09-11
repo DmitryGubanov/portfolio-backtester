@@ -7,7 +7,7 @@ A command-line script I made to help me with making decisions with regards to ch
 Main features:
 - Download day-by-day stock data from Google using Downloader.py
 - Draw a price history chart using downloaded data
-- Calculate and overlay [indicators]( "tools used to analyze trends and patterns") on the chart. Implemented indicators: [SMA]( "Simple Moving Average, average stock price for last N days"), [EMA]( "Exponential Moving Average, like SMA, but the prices used in the average are given exponentially decreasing weightings going backwards"), [MACD]( "Moving Average Convergence Divergence, a set of values which seek to quantify momentum")
+- Calculate and overlay [indicators](https://www.google.com "tools used to analyze trends and patterns") on the chart. Implemented indicators: [SMA]( "Simple Moving Average, average stock price for last N days"), [EMA]( "Exponential Moving Average, like SMA, but the prices used in the average are given exponentially decreasing weightings going backwards"), [MACD]( "Moving Average Convergence Divergence, a set of values which seek to quantify momentum")
 - Simulate past performance on a day-by-day basis for a portfolio of stocks
 - Supports periodic [rebalancing]( "Restoring the original weights for the assets in your portfolio") and contributing
 - Specify conditional ratios for assets, which could depend on some relationship between stock price and/or indicators (e.g. buy stock X when it's below SMA_50, sell when it's above SMA_10)
