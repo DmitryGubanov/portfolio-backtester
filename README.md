@@ -2,31 +2,42 @@
 
 A command-line script I made to help me with making decisions with regards to choosing stocks in the stock market. To oversimplify it, it's a portfolio backtester; i.e. given a portfolio, it'll tell you how that portfolio would've done in the past.
 
+> NOTE: I've included definitions and links for some words at the bottom, since stock terminology is used in describing some functionality. Words with definitions at the bottom have been **_emphasized_**
+
 Main features:
-- download stock data
-- calculate indicators: sma, ema, macd
-- draw stock charts with overlayed indicators
-- generate new data for one stock based on existing data of other stock (intended for ETFs based on an index prior to an ETF's inception, e.g. UPRO is based on S&P, but UPRO didn't exist before 2009, so you can use the S&P data to generate UPRO to see its predicted behaviour before 2009)
-- create basic portfolios of assets, specify rebalancing, contributions and simulate its past performance on a per-day basis
-- create portfolios that react to indicators rather than just being static (e.g. buy stock X when it's below the SMA50, sell when it's above SMA10)
-- summarizes performance with statistics and display results on graphs
+- Download day-by-day stock data from Google using Downloader.py
+- Draw a price history chart using downloaded data
+- Calculate and overlay **_indicators_** on the chart. Implemented indicators: **_SMA_**, **_EMA_**, **_MACD_**
+- Simulate past performance on a day-by-day basis for a portfolio of stocks
+- Supports periodic **_rebalancing_** and contributing
+- Specify conditional ratios for assets, which could depend on some relationship between stock price and/or indicators (e.g. buy stock X when it's below SMA_50, sell when it's above SMA_10)
+- Summarize portfolio performance with commonly used statistics. Implemented statistics: final value, number of trades made, **_(Adjusted) CAGR_**, **_Sharpe Ratio_**, **_Sortinio Ratio_**, best year, worst year, maximum **_drawdown_** and time taken to recover from it.
+- Show portfolio status over time by charting some statistics. Implemented charted statistics: portfolio value history, asset allocation/ratios over time, annual returns, contributions vs growth over time.
+
+Experimental features:
+- Generating data for one stock based on data of another stock. Example: stock A is correlated to stock B, but stock A only has data back to 2009, while stock B has data going back to 1990. You can use this data generation to generate data for stock A back to 1990 based on stock B. Intended for use on **_leveraged ETFs_**.
+
+
+# Prerequisites
+
+This program was written and tested in Python 3.5.2 (https://www.python.org/downloads/release/python-352/). Use a different version at your own discretion.
+
+Graphing requires matplotlib.
+```
+$ pip install matplotlib
+```
+> NOTE: ensure that the pip you use is installed under python 3.5 with 'pip -V'
+
+Finally, you're probably going to want to clone this repo.
 
 # Sample usage for V3.0
 
-Requires python 3.5, matplotlib, argparse, urllib
-
-This will act as an example of how this program can be used to tweak a common strategy for more desirable performance. I provided some sample strategies.
-
-A note on terminology:
-- Sharpe ratio: a ratio of gains to overall volatility, i.e. how much you gain overall vs how much you bounce around along the way there. Higher = better.
-- Sortino ratio: a 'refined' Sharpe ratio, in that it's a ratio of gains to negative volatility, i.e. how much you gain overall vs how many losses you had to weather to get there. Higher = better.
-- CAGR/Adjusted CAGR: Both are the same for this example. Simply put, it's your average yearly returns (cumulative annual growth rate).
+This will act as an example of how this program can be used to tweak a common portfolio strategy for more desirable performance. I provided some sample strategies.
 
 ### Step 0: Downloading the data
 
 Download stock data for the stocks/funds with tickers SPY and TLT.
 ```
-$ mkdir data
 $ python3.5 Downloader.py --download SPY TLT
 ```
 > For the curious, SPY follows the S&P500 index (simply put, the stock market as a whole) while TLT follows the long-term treasury bond index (simply put, the apparent value of stable and relatively low risk investments). You invest in the stock market for growth purposes, but when the stock market is doing poorly, the viablility of more stable investments rises since they aren't as exposed to poor market conditions. As a result, the two are somewhat inversely correlated which makes bonds a 'natural' hedge (something you use to mitigate losses) for stocks.
@@ -129,7 +140,7 @@ With our ratios maintained throughout the life of our portfolio, we've regained 
 
 ### Step 4: Experiment with timing
 
-Let's try a timing strategy based on the Standard Moving Average indicator. In this case we'll use the SMA 100. It's a fairly long term indicator. In short, we'll sell when there's a sharp enough negative movement to break a positive 100-day trend, but buy it back when it recovers above that trend. Theoretically, this is to avoid big negative movements; realistically, we'll see:
+Let's try a timing strategy based on the Simple Moving Average indicator. In this case we'll use the SMA 100. It's a fairly long term indicator. In short, we'll sell when there's a sharp enough negative movement to break a positive 100-day trend, but buy it back when it recovers above that trend. Theoretically, this is to avoid big negative movements; realistically, we'll see:
 
 ```
 $ python3.5 folio.py --portfolio 10000 --strategy stocks-and-bonds --rebalance q
@@ -182,9 +193,6 @@ o identify support and resistance lines (draw functionality for now)
 o logarithmic charts or daily returns instead of daily prices  
 o chart pattern: head and shoulders  
 o chart pattern: double top, double bottom  
-
-
-
 
 ### Long-term:
 
@@ -270,3 +278,29 @@ WIP: 3.0
 - implement custom strategies read from file (all needed data is automatically extracted from the strategies file so only the files need to be changed to test a new strategy)
 - Sharpe and Sortino ratios implemented (helps compare strategy effectiveness)
 - separated MACD into two indicators: MACD and MACDSIGNAL
+
+# Definitions
+
+> NOTE: Some definitions have been pulled from or influenced by Investopedia. Terminology is also simplified to avoid using undefined terms in definitions.
+
+**_Indicator_**: Indicators are statistics used to measure current conditions as well as to forecast financial or economic trends. http://www.investopedia.com/terms/i/indicator.asp
+
+**_SMA (Simple Moving Average)_**: Always has a period (number of days, X) associated with it. The average price for a stock over the last X days. Typically used to quantify trends. http://www.investopedia.com/terms/s/sma.asp
+
+**_EMA (Exponential Moving Average)_**: Always has a period (number of days, X) associated with it. Similar to the SMA, but the weight given to each price goes down exponentially as you go backwards in time. Whereas in a SMA, equal weight is given to each day. http://www.investopedia.com/terms/e/ema.asp
+
+**_MACD (Moving Average Convergence Divergence)_**: Typically has three periods (number of days, X, Y, Z) associated with it. The standard periods are 12, 26, 9, but these can be changed. The math is too complicated for this definition, but in general, it tries to quantify the momentum of a stock, rather then the trend. http://www.investopedia.com/terms/m/macd.asp
+
+**_Rebalance_**: When you build a portfolio of assets, a standard strategy is to specify weights for each asset (e.g. if you have 4 assets, you might give each a weight of 25% in your portfolio). However, over time asset values change and these weights/ratios might stray from what you originally specified. Rebalancing is simply buying/selling until the original weights/ratios are restored. http://www.investopedia.com/terms/r/rebalancing.asp
+
+**_[Adjusted] CAGR (Compound Annual Growth Rate)_**: Simply put, this is the average rate at which your portfolio grew every year. NOTE: growth is exponential, so this is not total growth divided by years. Adjusted CAGR is applicable only when contributions have been made to the portfolio after its inception; it doesn't include these contributions in the growth and tells you the 'actual' growth per year. http://www.investopedia.com/terms/c/cagr.asp
+
+**_Sharpe Ratio_**: A ratio of returns:volatility. In other words, a value meant to quantify how much risk you take on per unit of return. For example, two portfolios moved up 10% in a year, but the first moved drastically up and down along the way, while another moved in a straight line. The former is very volatile and would have a low ratio, while the latter is not volatile and would have a higher ratio. Typically, higher is better. http://www.investopedia.com/terms/s/sharperatio.asp
+
+**_Sortino Ratio_**: A ratio of returns:negative volatility. Similar to Sharpe, but this ignores volatility in the positive direction, since drastic upward moves are considered good. http://www.investopedia.com/terms/s/sortinoratio.asp
+
+**_Drawdown_**: A percent change between a peak and a valley on a chart. For our purposes, we care about maximum drawdowns, which is the biggest loss you incur along the way. http://www.investopedia.com/terms/d/drawdown.asp
+
+**_ETF (Exchange Traded Fund)_**: For all practical purposes, this is just another stock. The difference is, ETFs aren't based on spefic companies usually, but rather on and index or collections of companies/commodities/etc., usually based on some criteria. http://www.investopedia.com/terms/e/etf.asp
+
+**_Leveraged ETF_**: Assume there exists an ETF X. A leveraged ETF based on X would seek to multiply the returns of X by some factor (usually 2 or 3). Note: returns can be negative, so multiplying returns is typically considered very risky. http://www.investopedia.com/terms/l/leveraged-etf.asp
