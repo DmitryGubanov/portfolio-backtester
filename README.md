@@ -40,7 +40,7 @@ Download stock data for the stocks/funds with tickers SPY and TLT.
 ```
 $ python3.5 Downloader.py --download SPY TLT
 ```
-> For the curious, SPY follows the S&P500 index (simply put, the stock market as a whole) while TLT follows the long-term treasury bond index (simply put, the apparent value of stable and relatively low risk investments). You invest in the stock market for growth purposes, but when the stock market is doing poorly, the viablility of more stable investments rises since they aren't as exposed to poor market conditions. As a result, the two are somewhat inversely correlated which makes bonds a 'natural' hedge (something you use to mitigate losses) for stocks.
+> NOTE: For the curious, SPY follows the S&P500 index (simply put, the stock market as a whole) while TLT follows the long-term treasury bond index (simply put, the apparent value of stable and relatively low risk investments). You invest in the stock market for growth purposes, but when the stock market is doing poorly, the viablility of more stable investments rises since they aren't as exposed to poor market conditions. As a result, the two are somewhat inversely correlated which makes bonds a 'natural' hedge (something you use to mitigate losses) for stocks.
 
 ### Step 1: Testing standard strategy (our benchmark)
 
@@ -289,11 +289,14 @@ WIP: 3.0
 
 **_EMA (Exponential Moving Average)_**: Always has a period (number of days, X) associated with it. Similar to the SMA, but the weight given to each price goes down exponentially as you go backwards in time. Whereas in a SMA, equal weight is given to each day. http://www.investopedia.com/terms/e/ema.asp
 
-**_MACD (Moving Average Convergence Divergence)_**: Typically has three periods (number of days, X, Y, Z) associated with it. The standard periods are 12, 26, 9, but these can be changed. The math is too complicated for this definition, but in general, it tries to quantify the momentum of a stock, rather then the trend. http://www.investopedia.com/terms/m/macd.asp
+**_MACD (Moving Average Convergence Divergence)_**: Typically has three periods (number of days, X, Y, Z) associated with it. The standard periods are 12, 26, 9, but these can be changed. The math is too complicated for this definition, but in general, it tries to quantify the momentum of a stock, rather than the trend, by subtracting a long-term trend from a short-term trend (in an attempt to see the 'net' trend). http://www.investopedia.com/terms/m/macd.asp
 
 **_Rebalance_**: When you build a portfolio of assets, a standard strategy is to specify weights for each asset (e.g. if you have 4 assets, you might give each a weight of 25% in your portfolio). However, over time asset values change and these weights/ratios might stray from what you originally specified. Rebalancing is simply buying/selling until the original weights/ratios are restored. http://www.investopedia.com/terms/r/rebalancing.asp
 
-**_[Adjusted] CAGR (Compound Annual Growth Rate)_**: Simply put, this is the average rate at which your portfolio grew every year. NOTE: growth is exponential, so this is not total growth divided by years. Adjusted CAGR is applicable only when contributions have been made to the portfolio after its inception; it doesn't include these contributions in the growth and tells you the 'actual' growth per year. http://www.investopedia.com/terms/c/cagr.asp
+**_[Adjusted] CAGR (Compound Annual Growth Rate)_**: Simply put, this is the average rate at which your portfolio grew every year. Adjusted CAGR is applicable only when contributions have been made to the portfolio after its inception; it doesn't include these contributions in the growth and tells you the 'net' growth per year.
+> NOTE: growth is exponential, so this is not total growth divided by years.
+
+http://www.investopedia.com/terms/c/cagr.asp
 
 **_Sharpe Ratio_**: A ratio of returns:volatility. In other words, a value meant to quantify how much risk you take on per unit of return. For example, two portfolios moved up 10% in a year, but the first moved drastically up and down along the way, while another moved in a straight line. The former is very volatile and would have a low ratio, while the latter is not volatile and would have a higher ratio. Typically, higher is better. http://www.investopedia.com/terms/s/sharperatio.asp
 
@@ -303,4 +306,7 @@ WIP: 3.0
 
 **_ETF (Exchange Traded Fund)_**: For all practical purposes, this is just another stock. The difference is, ETFs aren't based on spefic companies usually, but rather on and index or collections of companies/commodities/etc., usually based on some criteria. http://www.investopedia.com/terms/e/etf.asp
 
-**_Leveraged ETF_**: Assume there exists an ETF X. A leveraged ETF based on X would seek to multiply the returns of X by some factor (usually 2 or 3). Note: returns can be negative, so multiplying returns is typically considered very risky. http://www.investopedia.com/terms/l/leveraged-etf.asp
+**_Leveraged ETF_**: Assume there exists an ETF X. A leveraged ETF based on X would seek to multiply the returns of X by some factor (usually 2 or 3).
+> NOTE: returns can be negative, so multiplying returns is typically considered very risky.
+
+http://www.investopedia.com/terms/l/leveraged-etf.asp
