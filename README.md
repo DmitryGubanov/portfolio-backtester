@@ -7,15 +7,15 @@ A command-line script I made to help me with making decisions with regards to ch
 Main features:
 - Download day-by-day stock data from Google using Downloader.py
 - Draw a price history chart using downloaded data
-- Calculate and overlay [indicators](https://www.google.com "tools used to analyze trends and patterns") on the chart. Implemented indicators: [SMA]( "Simple Moving Average, average stock price for last N days"), [EMA]( "Exponential Moving Average, like SMA, but the prices used in the average are given exponentially decreasing weightings going backwards"), [MACD]( "Moving Average Convergence Divergence, a set of values which seek to quantify momentum")
+- Calculate and overlay [indicators](https://github.com/DmitryGubanov/portfolio-backtester/tree/v3.0-basic-timing-strategies#indicator "tools used to analyze trends and patterns") on the chart. Implemented indicators: [SMA](https://github.com/DmitryGubanov/portfolio-backtester/tree/v3.0-basic-timing-strategies#sma-simple-moving-average "Simple Moving Average, average stock price for last N days"), [EMA](https://github.com/DmitryGubanov/portfolio-backtester/tree/v3.0-basic-timing-strategies#ema-exponential-moving-average "Exponential Moving Average, like SMA, but the prices used in the average are given exponentially decreasing weightings going backwards"), [MACD](https://github.com/DmitryGubanov/portfolio-backtester/tree/v3.0-basic-timing-strategies#macd-moving-average-convergence-divergence "Moving Average Convergence Divergence, a set of values which seek to quantify momentum")
 - Simulate past performance on a day-by-day basis for a portfolio of stocks
-- Supports periodic [rebalancing]( "Restoring the original weights for the assets in your portfolio") and contributing
+- Supports periodic [rebalancing](https://github.com/DmitryGubanov/portfolio-backtester/tree/v3.0-basic-timing-strategies#rebalance "Restoring the original weights for the assets in your portfolio") and contributing
 - Specify conditional ratios for assets, which could depend on some relationship between stock price and/or indicators (e.g. buy stock X when it's below SMA_50, sell when it's above SMA_10)
-- Summarize portfolio performance with commonly used statistics. Implemented statistics: final value, number of trades made, **_(Adjusted) CAGR_**, **_Sharpe Ratio_**, **_Sortinio Ratio_**, best year, worst year, maximum **_drawdown_** and time taken to recover from it.
+- Summarize portfolio performance with commonly used statistics. Implemented statistics: final value, number of trades made, [(Adjusted) CAGR](https://github.com/DmitryGubanov/portfolio-backtester/tree/v3.0-basic-timing-strategies#adjusted-cagr-compound-annual-growth-rate "Adjusted Compound Annual Growth Rate, your average yearly returns"), [Sharpe Ratio](https://github.com/DmitryGubanov/portfolio-backtester/tree/v3.0-basic-timing-strategies#sharpe-ratio "A ratio quantifying how many returns you make per unit of risk; higher is better"), [Sortino Ratio](https://github.com/DmitryGubanov/portfolio-backtester/tree/v3.0-basic-timing-strategies#sortino-ratio "Similar to Sharpe, but this ratio only factors in negative volatility"), best year, worst year, maximum [drawdown](https://github.com/DmitryGubanov/portfolio-backtester/tree/v3.0-basic-timing-strategies#drawdown "A percent value representing a change from a peak to a valley, i.e. max drawdown is the maximum loss incurred along the way") and time taken to recover from it.
 - Show portfolio status over time by charting some statistics. Implemented charted statistics: portfolio value history, asset allocation/ratios over time, annual returns, contributions vs growth over time.
 
 Experimental features:
-- Generating data for one stock based on data of another stock. Example: stock A is correlated to stock B, but stock A only has data back to 2009, while stock B has data going back to 1990. You can use this data generation to generate data for stock A back to 1990 based on stock B. Intended for use on **_leveraged ETFs_**.
+- Generating data for one stock based on data of another stock. Example: stock A is correlated to stock B, but stock A only has data back to 2009, while stock B has data going back to 1990. You can use this data generation to generate data for stock A back to 1990 based on stock B. Intended for use on [leveraged ETFs](https://github.com/DmitryGubanov/portfolio-backtester/tree/v3.0-basic-timing-strategies#leveraged-etf "To oversimplify, a stock which seeks to multiply the returns of another stock by a factor").
 
 # 0. Table of contents
 
@@ -193,9 +193,9 @@ This section is for using some of the more advanced features.
 
 ### 3.0 Advanced features
 
-[3.1 Generating data]()
+[3.1 Generating data](https://github.com/DmitryGubanov/portfolio-backtester/tree/v3.0-basic-timing-strategies#31-generating-data)
 
-[3.2 Adjusting/creating  strategies]()
+[3.2 Adjusting/creating  strategies](https://github.com/DmitryGubanov/portfolio-backtester/tree/v3.0-basic-timing-strategies#32-adjusting-timing-strategies)
 
 ### 3.1 Generating data
 ### 3.2 Adjusting timing strategies
@@ -312,23 +312,33 @@ WIP: 3.0
 > NOTE: Some definitions have been pulled from or influenced by Investopedia. Terminology is also simplified to avoid using undefined terms in definitions.
 
 #### Indicator
-Indicators are statistics used to measure current conditions as well as to forecast financial or economic trends. http://www.investopedia.com/terms/i/indicator.asp
+Indicators are statistics used to measure current conditions as well as to forecast financial or economic trends.
+
+http://www.investopedia.com/terms/i/indicator.asp
 
 
 #### SMA (Simple Moving Average)
-Always has a period (number of days, X) associated with it. The average price for a stock over the last X days. Typically used to quantify trends. http://www.investopedia.com/terms/s/sma.asp
+Always has a period (number of days, X) associated with it. The average price for a stock over the last X days. Typically used to quantify trends.
+
+http://www.investopedia.com/terms/s/sma.asp
 
 
 #### EMA (Exponential Moving Average)
-Always has a period (number of days, X) associated with it. Similar to the SMA, but the weight given to each price goes down exponentially as you go backwards in time. Whereas in a SMA, equal weight is given to each day. http://www.investopedia.com/terms/e/ema.asp
+Always has a period (number of days, X) associated with it. Similar to the SMA, but the weight given to each price goes down exponentially as you go backwards in time. Whereas in a SMA, equal weight is given to each day.
+
+http://www.investopedia.com/terms/e/ema.asp
 
 
 #### MACD (Moving Average Convergence Divergence)
-Typically has three periods (number of days, X, Y, Z) associated with it. The standard periods are 12, 26, 9, but these can be changed. The math is too complicated for this definition, but in general, it tries to quantify the momentum of a stock, rather than the trend, by subtracting a long-term trend from a short-term trend (in an attempt to see the 'net' trend). http://www.investopedia.com/terms/m/macd.asp
+Typically has three periods (number of days, X, Y, Z) associated with it. The standard periods are 12, 26, 9, but these can be changed. The math is too complicated for this definition, but in general, it tries to quantify the momentum of a stock, rather than the trend, by subtracting a long-term trend from a short-term trend (in an attempt to see the 'net' trend).
+
+http://www.investopedia.com/terms/m/macd.asp
 
 
 #### Rebalance
-When you build a portfolio of assets, a standard strategy is to specify weights for each asset (e.g. if you have 4 assets, you might give each a weight of 25% in your portfolio). However, over time asset values change and these weights/ratios might stray from what you originally specified. Rebalancing is simply buying/selling until the original weights/ratios are restored. http://www.investopedia.com/terms/r/rebalancing.asp
+When you build a portfolio of assets, a standard strategy is to specify weights for each asset (e.g. if you have 4 assets, you might give each a weight of 25% in your portfolio). However, over time asset values change and these weights/ratios might stray from what you originally specified. Rebalancing is simply buying/selling until the original weights/ratios are restored.
+
+http://www.investopedia.com/terms/r/rebalancing.asp
 
 
 #### [Adjusted] CAGR (Compound Annual Growth Rate)
@@ -339,19 +349,27 @@ http://www.investopedia.com/terms/c/cagr.asp
 
 
 #### Sharpe Ratio
-A ratio of returns:volatility. In other words, a value meant to quantify how much risk you take on per unit of return. For example, two portfolios moved up 10% in a year, but the first moved drastically up and down along the way, while another moved in a straight line. The former is very volatile and would have a low ratio, while the latter is not volatile and would have a higher ratio. Typically, higher is better. http://www.investopedia.com/terms/s/sharperatio.asp
+A ratio of returns:volatility. In other words, a value meant to quantify how much return you get on per unit of risk you take on. Often times risk is the variable controlled for when managing a portfolio. For example, two portfolios moved up 10% in a year, but the first moved drastically up and down along the way, while another moved in a straight line. The former is very volatile and would have a low ratio, while the latter is not volatile and would have a higher ratio. Typically, higher is better.
+
+http://www.investopedia.com/terms/s/sharperatio.asp
 
 
 #### Sortino Ratio
-A ratio of returns:negative volatility. Similar to Sharpe, but this ignores volatility in the positive direction, since drastic upward moves are considered good. http://www.investopedia.com/terms/s/sortinoratio.asp
+A ratio of returns:negative volatility. Similar to Sharpe, but this ignores volatility in the positive direction, since drastic upward moves are considered good.
+
+http://www.investopedia.com/terms/s/sortinoratio.asp
 
 
 #### Drawdown
-A percent change between a peak and a valley on a chart. For our purposes, we care about maximum drawdowns, which is the biggest loss you incur along the way. http://www.investopedia.com/terms/d/drawdown.asp
+A percent change between a peak and a valley on a chart. For our purposes, we care about maximum drawdowns, which is the biggest loss you incur along the way.
+
+http://www.investopedia.com/terms/d/drawdown.asp
 
 
 #### ETF (Exchange Traded Fund)
-For all practical purposes, this is just another stock. The difference is, ETFs aren't based on spefic companies usually, but rather on and index or collections of companies/commodities/etc., usually based on some criteria. http://www.investopedia.com/terms/e/etf.asp
+For all practical purposes, this is just another stock. The difference is, ETFs aren't based on spefic companies usually, but rather on and index or collections of companies/commodities/etc., usually based on some criteria.
+
+http://www.investopedia.com/terms/e/etf.asp
 
 
 #### Leveraged ETF
