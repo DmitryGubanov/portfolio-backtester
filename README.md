@@ -45,7 +45,7 @@ Finally, you're probably going to want to clone this repo.
 
 # 2. Sample usage
 
-This will act as an example of how this program can be used to tweak a common portfolio strategy for more desirable performance. I provided some sample strategies.
+This will act as an example of how this program can be used to tweak a common portfolio strategy for more desirable performance. I provided some sample strategy files in the repo which we'll use.
 
 ### 2.0: Downloading the data
 
@@ -53,12 +53,12 @@ Download stock data for the stocks/funds with tickers SPY and TLT.
 ```
 $ python3.5 Downloader.py --download SPY TLT
 ```
-> NOTE: For the curious, SPY follows the S&P500 index (simply put, the stock market as a whole) while TLT follows the long-term treasury bond index (simply put, the apparent value of stable and relatively low risk investments). You invest in the stock market for growth purposes, but when the stock market is doing poorly, the viablility of more stable investments rises since they aren't as exposed to poor market conditions. As a result, the two are somewhat inversely correlated which makes bonds a 'natural' hedge (something you use to mitigate losses) for stocks.
+> NOTE: For the curious, SPY follows the S&P500 index (the stock market as a whole) while TLT follows the long-term treasury bond index (the apparent value of stable and relatively low risk investments). You invest in the stock market for growth purposes, but when the stock market is doing poorly, the viablility of more stable investments rises since they aren't as exposed to poor market conditions. In short, when the stock market is down, there is a better than random chance the bond index is up. As a result, the two are somewhat inversely correlated which makes bonds a 'natural' hedge (something you use to mitigate losses) for stocks.
 
 ### 2.1: Testing standard strategy (our benchmark)
 
 Let's see where simply investing 10,000 in the stock market gets us:
-> NOTE: if you pay attention to the command, you'll notice '--strategy stocks-only'
+> NOTE: If you pay attention to the command, you'll notice '--strategy stocks-only'. stocks-only is a sample strategy file I provided - we'll be using three different ones.
 
 > ANOTHER NOTE: Your outputs will differ from mine, since time has passed and the stocks we're using in this example are real stocks which change price over time
 
@@ -86,7 +86,7 @@ max drawdown: -56.26%
 
 ```
 
-Note on chart:
+Charts:
 - first chart: portfolio value vs time
 - second chart: asset allocation vs time (in this case, we're 100% in stocks the whole time)
 - third chart: annual returns
@@ -123,7 +123,9 @@ max drawdown: -35.72%
 ```
 <img src="http://i.imgur.com/5zhQrJv.png" alt="chart" />
 
-By introducing bonds, we've cut down our risk by ~40% at the cost of ~20% of our gains. As a result, the **_Sharpe_** and **_Sortino ratios_** are both higher. From the graphs, we can see our asset allocations have veered away from what we set intially (0.6 and 0.4, check the sample files).
+By introducing bonds, we've cut down our risk by ~40% at the cost of ~20% of our gains. As a result, the [Sharpe](https://github.com/DmitryGubanov/portfolio-backtester/tree/v3.0-basic-timing-strategies#sharpe-ratio "A ratio quantifying how many returns you make per unit of risk; higher is better") and [Sortino](https://github.com/DmitryGubanov/portfolio-backtester/tree/v3.0-basic-timing-strategies#sortino-ratio "Similar to Sharpe, but this ratio only factors in negative volatility") ratios are both higher.
+
+From the graphs, we can see our asset allocations have veered away from what we set intially (0.6 and 0.4, check the sample files).
 
 ### 2.3: Maintain ratios by rebalancing
 
@@ -157,7 +159,7 @@ With our ratios maintained throughout the life of our portfolio, we've regained 
 
 ### 2.4: Experiment with timing
 
-Let's try a timing strategy based on the Simple Moving Average indicator. In this case we'll use the SMA 100. It's a fairly long term indicator. In short, we'll sell when there's a sharp enough negative movement to break a positive 100-day trend, but buy it back when it recovers above that trend. Theoretically, this is to avoid big negative movements; realistically, we'll see:
+Let's try a timing strategy based on the Simple Moving Average indicator. In this case we'll use the SMA 100, a fairly long term indicator. In short, we'll sell when there's a sharp enough negative movement to break a positive 100-day trend, but buy it back when it recovers above that trend. Theoretically, this is to avoid big negative movements; realistically, we'll see:
 
 ```
 $ python3.5 folio.py --portfolio 10000 --strategy stocks-and-bonds --rebalance q
@@ -182,6 +184,13 @@ max drawdown: -12.76%
   between 2007-06-05 and 2009-03-09, recovered by 2009-09-16
 ```
 <img src="http://i.imgur.com/Aq37jCM.png" alt="chart" />
+
+First thing to notice is the asset allocations. The blue one (SPY) is bouncing between 0.6 and 0.2, because our strategy sells 40% below the SMA 100, and buys it back when it comes back above it.
+
+Before moving on, it might help to visualize this:
+```
+$ python3.5 folio.py --draw SPY --indicators SMA_100
+```
 
 From our original, we've lost ~35% of our gains, but we've also lost ~80% of our risk. In fact, this is not immediately obvious, but the Sharpe and Sortinio ratios indicate this strategy sacrifices some upward movement to avoid a lot of downward movement. We're also making ~317 trades over the course of 15 years, which is a lot more than the original of 1 trade, but that comes out to about 20 trades a year, which really isn't that much.
 
