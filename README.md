@@ -2,14 +2,14 @@
 
 A command-line script I made to help me with making decisions with regards to choosing stocks in the stock market. To oversimplify it, it's a portfolio backtester; i.e. given a portfolio, it'll tell you how that portfolio would've done in the past.
 
-> NOTE: I've included definitions and links for some words at the bottom, since stock terminology is used in describing some functionality. Words with definitions at the bottom have been **_emphasized_**. If you mousover, a short summary should appear, but you can click to navigate to the actual definitions
+> NOTE: I've included definitions and links for some words at the bottom, since stock terminology is used in describing some functionality. Words with definitions at the bottom are in blue and clickable. If you mousover, a short summary should appear, but you can click to navigate to the actual, longer definitions
 
 Main features:
 - Download day-by-day stock data from Google using Downloader.py
 - Draw a price history chart using downloaded data
-- Calculate and overlay **_indicators_** on the chart. Implemented indicators: **_SMA_**, **_EMA_**, **_MACD_**
+- Calculate and overlay [indicators]( "tools used to analyze trends and patterns") on the chart. Implemented indicators: [SMA]( "Simple Moving Average, average stock price for last N days"), [EMA]( "Exponential Moving Average, like SMA, but the prices used in the average are given exponentially decreasing weightings going backwards"), [MACD]( "Moving Average Convergence Divergence, a set of values which seek to quantify momentum")
 - Simulate past performance on a day-by-day basis for a portfolio of stocks
-- Supports periodic **_rebalancing_** and contributing
+- Supports periodic [rebalancing]( "Restoring the original weights for the assets in your portfolio") and contributing
 - Specify conditional ratios for assets, which could depend on some relationship between stock price and/or indicators (e.g. buy stock X when it's below SMA_50, sell when it's above SMA_10)
 - Summarize portfolio performance with commonly used statistics. Implemented statistics: final value, number of trades made, **_(Adjusted) CAGR_**, **_Sharpe Ratio_**, **_Sortinio Ratio_**, best year, worst year, maximum **_drawdown_** and time taken to recover from it.
 - Show portfolio status over time by charting some statistics. Implemented charted statistics: portfolio value history, asset allocation/ratios over time, annual returns, contributions vs growth over time.
@@ -23,13 +23,13 @@ Experimental features:
 
 [2. Sample usage](https://github.com/DmitryGubanov/portfolio-backtester/tree/v3.0-basic-timing-strategies#2-sample-usage)
 
-[3. Advanced usage]()
+[3. Advanced usage](https://github.com/DmitryGubanov/portfolio-backtester/tree/v3.0-basic-timing-strategies#3-advanced-usage)
 
-[4. Current work in progress]()
+[4. Current work in progress](https://github.com/DmitryGubanov/portfolio-backtester/tree/v3.0-basic-timing-strategies#4-current-work-in-progress)
 
-[5. Changelog]
+[5. Changelog](https://github.com/DmitryGubanov/portfolio-backtester/tree/v3.0-basic-timing-strategies#5-version-featureschangelog)
 
-[6. Definitions]
+[6. Definitions](https://github.com/DmitryGubanov/portfolio-backtester/tree/v3.0-basic-timing-strategies#6-definitions)
 
 # 1. Prerequisites
 
