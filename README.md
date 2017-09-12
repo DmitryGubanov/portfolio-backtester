@@ -221,7 +221,7 @@ $ python3.5 folio.py --draw UPRO
 
 <img src="http://i.imgur.com/FmXWZ7L.png" alt="chart" />
 
-That's more than a 10x increase in value over the last ~7 years. This is all the data there is on UPRO, so all existing data suggests to this being a good investment. However, UPRO was conveniently started after the recession in 2008, so there exists no data on how it would have performed during that time. Let's find out (theoretically speaking) by generating UPRO based on SPY.
+That's more than a 10x increase in value over the last ~7 years. This is all the data there is on UPRO, so all existing data suggests that this is a good investment. However, UPRO was conveniently started after the recession in 2008, so there exists no data on how it would have performed during that time. Let's find out (theoretically speaking) by generating UPRO based on SPY.
 
 This generation is using existing UPRO and SPY data to build a relationship between the two, then using that relationship to generate the part of UPRO that doesn't exist where SPY does exist. Luckily SPY goes back all the way to the 1990s, so we can generate UPRO that far.
 
@@ -235,7 +235,7 @@ $ python3.5 folio.py --draw UPRO --use-generated UPRO SPY
 
 Anyway, we can see that UPRO dropped quite a bit (~95%) during the recession and during the dot-com crash. With this new information, it's unlikely that many would feel comfortable investing in something that lost over 90% of its value on two occasions in the last 20 years.
 
-Let's build a portfolio using UPRO the same way we did with SPY in 2.1.
+Let's build a portfolio using UPRO the same way we did with SPY in section 2.1.
 
 ```
 python3.5 folio.py --portfolio 10000 --strategy upro-only --use-generated UPRO SPY
@@ -299,7 +299,11 @@ $ cat stocks-and-bonds-timing
 0.4,TLT,ALWAYS,NEVER
 ```
 
-The buy and sell signals for the second portion is more involved now, but it's simply saying buy when SPY's price is above SPY's SMA_100 and sell when the opposite happens. Without using any fancy regex, the pattern is basically: <ticker>~<indicator> <relation> <ticker>~<indicator>.
+The buy and sell signals for the second portion is more involved now, but it's simply saying buy when SPY's price is above SPY's SMA_100 and sell when the opposite happens. Without using any fancy regex, the pattern is basically:
+
+```
+<ticker>~<indicator> <relation> <ticker>~<indicator>.
+```
 
 Ticker can be any real ticker for which you have data.
 
