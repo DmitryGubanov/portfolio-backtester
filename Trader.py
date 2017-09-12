@@ -147,15 +147,6 @@ class Trader(object):
         """
         self._brain.desired_asset_ratios[ticker] = ratio
 
-    # def _calculate_desired_shares(self):
-    #     """Calculates the shares required of each asset, to satisfy the
-    #     desired ratios."""
-    #     for asset in self._brain.assets_of_interest:
-    #         self._brain.desired_asset_shares[asset] = int(
-    #             self.portfolio.value()
-    #             * self._brain.desired_asset_ratios[asset]
-    #             / self._market.query_stock(asset))
-
     def _execute_trades(self):
         """Calculates the trades needed to be made to satisfy the
         desired shares and executes the trades.
@@ -167,7 +158,6 @@ class Trader(object):
             following day."""
         # calculate trades needed
         desired_trades = {'buy': {}, 'sell': {}}
-        # TODO sort out whole assets of interest shit
         for asset in self._brain.assets_of_interest:
             change = (self._brain.desired_shares[asset]
                       - self.portfolio.shares_of(asset))
@@ -193,11 +183,3 @@ class Trader(object):
             return
         if self._market.new_period[self._contributions[1]]:
             self.portfolio.add_cash(float(self._contributions[0]))
-
-    # def _rebalance(self):
-    #     """Rebalances the portfolio according to the set rebalancing
-    #     settings."""
-    #     if self._rebalancing_period == None:
-    #         return
-    #     if self._market.new_period[self._rebalancing_period]:
-    #         # rebalance
