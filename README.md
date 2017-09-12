@@ -204,15 +204,114 @@ This section is for using some of the more advanced features.
 
 ### 3.0 Advanced features
 
+> Disclaimer: These are advanced features of a stock program, so they do require a bit more knowledge and a more involved perspective on the stock market to be understood. I'll try my best to convey the motivations, functionality, and results as succinctly as possible.
+
 [3.1 Generating data](https://github.com/DmitryGubanov/portfolio-backtester/tree/v3.0-basic-timing-strategies#31-generating-data)
 
 [3.2 Adjusting/creating  strategies](https://github.com/DmitryGubanov/portfolio-backtester/tree/v3.0-basic-timing-strategies#32-adjusting-timing-strategies)
 
 ### 3.1 Generating data
-To be created later
+
+This demonstration will use two tickers, SPY and UPRO. UPRO tries to multiply the returns of SPY by 3, which simply means if SPY moves 1%, UPRO tries to move 3%. This seems attractive:
+
+```
+$ python3.5 Downloader.py --download SPY UPRO
+$ python3.5 folio.py --draw UPRO
+```
+
+<img src="http://i.imgur.com/FmXWZ7L.png" alt="chart" />
+
+That's more than a 10x increase in value over the last ~7 years. This is all the data there is on UPRO, so all existing data suggests to this being a good investment. However, UPRO was conveniently started after the recession in 2008, so there exists no data on how it would have performed during that time. Let's find out (theoretically speaking) by generating UPRO based on SPY.
+
+This generation is using existing UPRO and SPY data to build a relationship between the two, then using that relationship to generate the part of UPRO that doesn't exist where SPY does exist. Luckily SPY goes back all the way to the 1990s, so we can generate UPRO that far.
+
+```
+$ python3.5 folio.py --draw UPRO --use-generated UPRO SPY
+```
+
+> NOTE: Notice the added --use-generated argument on the command-line. --use-generated simply bypasses the original data source for any feature, and replaces it with the generated data.
+
+<img src="http://i.imgur.com/W2hU8rL.png" alt="chart" />
+
+Anyway, we can see that UPRO dropped quite a bit (~95%) during the recession and during the dot-com crash. With this new information, it's unlikely that many would feel comfortable investing in something that lost over 90% of its value on two occasions in the last 20 years.
+
+Let's build a portfolio using UPRO the same way we did with SPY in 2.1.
+
+```
+python3.5 folio.py --portfolio 10000 --strategy upro-only --use-generated UPRO SPY
+
+##################################
+# PERFORMANCE SUMMARY
+##################################
+initial: $10000.00
+final:   $503322.53
+trades:  1
+---------------------------
+Sharpe Ratio:  0.16743168735558275
+Sortino Ratio: 0.3561463844157349
+---------------------------
+CAGR:          17.26%
+Adjusted CAGR: 17.26%
+---------------------------
+best year:  146.13%
+worst year: -85.67%
+---------------------------
+max drawdown: -96.18%
+  between 2000-03-27 and 2009-03-09, recovered by 2016-12-07
+```
+
+Although the yearly returns look good, starting in 2000 you would have lost money until you lost 96% and would only recover by the end of 2016. To most, this would be a deal-breaker, which is why I consider this feature handy in testing leveraged ETFs in situations to which they've not been exposed.
+
+This is an experimental feature, in that there is no way to verify its accuracy. However, I've used this method to generate data that does exist (for verification purposes; in any other case, I wouldn't need to generate data which already exists) and it was pretty accurate.
+
+Using the standalone generate functionality, you can compare generated data against real data:
+
+```
+$ python3.5 folio.py --generate UPRO SPY
+```
+
+<img src="http://i.imgur.com/NNSRDGc.png" alt="chart" />
+
+At the top we see the real vs the generated, at the bottom we see the generated and what the generated is generated from.
 
 ### 3.2 Adjusting timing strategies
-To be created later
+
+In each example so far, there have been strategy files used. They're in CSV format and have four columns: weight, ticker, buy signal, sell signal. Here's 'stocks-only':
+
+```
+$ cat stocks-only
+
+1.0,SPY,ALWAYS,NEVER
+0.0,TLT,ALWAYS,NEVER
+```
+
+The weight is the portion of the portfolio dedicated to that asset or position. In this case, 1.0 (or 100%) SPY and 0.0 (or 0%) TLT. The 0.0 line isn't necessary, but it's there for consistency between strategies.
+
+A signal is like a raised flag, if the buy/sell signal is satisfied, the strategy says to buy/sell that portion of the portfolio. In this case, the buy signals are ALWAYS (always buy this position) and sell signals are NEVER (never sell this position). This just represents a buy-and-hold portfolio.
+
+Here's 'stocks-and-bonds-timing':
+
+```
+$ cat stocks-and-bonds-timing
+
+0.2,SPY,ALWAYS,NEVER
+0.4,SPY,SPY~PRICE > SPY~SMA_100,SPY~PRICE < SPY~SMA_100
+0.4,TLT,ALWAYS,NEVER
+```
+
+The buy and sell signals for the second portion is more involved now, but it's simply saying buy when SPY's price is above SPY's SMA_100 and sell when the opposite happens. Without using any fancy regex, the pattern is basically: <ticker>~<indicator> <relation> <ticker>~<indicator>.
+
+Ticker can be any real ticker for which you have data.
+
+Indicator currently has to be one of the following, where X, Y, Z are positive integers:
+- PRICE
+- SMA_X
+- EMA_X
+- MACD_X-Y-Z
+- MACDSIGNAL_X-Y-Z
+
+Relation is either < or >
+
 
 # 4. Current work in progress
 
