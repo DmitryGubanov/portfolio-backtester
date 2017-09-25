@@ -344,11 +344,12 @@ class Calculator(object):
         price_lut_tgt = db.build_price_lut(ticker_tgt)
         price_lut_src = db.build_price_lut(ticker_src)
         # before doing any calculations, check if all data is on disk already
-        price_lut_gen_part = db.build_price_lut(ticker_tgt + '--GEN-PART')
-        price_lut_gen_full = db.build_price_lut(ticker_tgt + '--GEN-FULL')
-        if (len(price_lut_gen_part) == len(price_lut_src)
-                and len(price_lut_gen_full) == len(price_lut_src)):
-            return (price_lut_gen_part, price_lut_gen_full)
+        # NOTE: feature disabled for now, as it didnt respond to changes
+        # price_lut_gen_part = db.build_price_lut(ticker_tgt + '--GEN-PART')
+        # price_lut_gen_full = db.build_price_lut(ticker_tgt + '--GEN-FULL')
+        # if (len(price_lut_gen_part) == len(price_lut_src)
+        #         and len(price_lut_gen_full) == len(price_lut_src)):
+        #     return (price_lut_gen_part, price_lut_gen_full)
         # sorted dates needed later
         src_dates = sorted(price_lut_src.keys())
         gen_dates = sorted(price_lut_tgt.keys())
@@ -359,7 +360,9 @@ class Calculator(object):
         # a set of adjustments to use if not otherwise specified
         adjustments = {
             'UPRO': (0, 0),
-            'TMF': (0.01, 0.05)
+            'TMF': (0.01, 0.05),
+            'TQQQ': (0.025, 0),
+            'UDOW': (0, 0.01)
         }
         if step == 0.00005 and pos_adj is None and neg_adj is None:
             try:
