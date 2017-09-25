@@ -89,15 +89,15 @@ def main():
         pyplot.subplot(211)
         pyplot.plot([date_obj(d) for d in tgt_dates],
                     tgt_gen_full_prices[-len(tgt_dates):],
-                    label='UPRO-generated')
+                    label='{}-generated'.format(args.generate[0]))
         pyplot.plot([date_obj(d) for d in tgt_dates],
                     tgt_gen_part_prices[-len(tgt_dates):],
-                    label='UPRO')
+                    label='{}'.format(args.generate[0]))
         pyplot.legend(loc='upper left')
 
         pyplot.subplot(212)
-        pyplot.plot(src_dates, tgt_gen_part_prices, label='UPRO-generated')
-        pyplot.plot(src_dates, src_prices, label='SPY')
+        pyplot.plot(src_dates, tgt_gen_part_prices, label='{}-generated'.format(args.generate[0]))
+        pyplot.plot(src_dates, src_prices, label='{}'.format(args.generate[1]))
         pyplot.legend(loc='upper left')
 
         pyplot.show()

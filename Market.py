@@ -31,7 +31,7 @@ class Market(object):
         """
         self._db = DataManager()
         self.new_period = {'m': False, 'q': False, 'y': False}
-        self.commissions = 0
+        self.commissions = 10
         self.stocks = {}
         self.stocks_indicators = {}
         if tickers != None:

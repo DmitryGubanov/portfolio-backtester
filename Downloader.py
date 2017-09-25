@@ -119,7 +119,7 @@ class Downloader(object):
             'TLT': 'NASDAQ'
         }
         dt = datetime.datetime.strptime(date, '%Y-%m-%d')
-        base = 'http://www.google.com/finance/historical'
+        base = 'http://finance.google.com/finance/historical'
         if market:
             query = '{}%3A{}'.format(market, ticker)
         else:
